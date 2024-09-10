@@ -1,0 +1,9 @@
+ <Project>
+    <PropertyGroup>
+        <ConfigDirectory>$([MSBuild]::GetPathOfFileAbove('Directory.Build.props'))/../.config</ConfigDirectory>
+        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    </PropertyGroup>
+    <ItemGroup>
+        <AdditionalFiles Include="$(ConfigDirectory)/stylecop.json" />
+    </ItemGroup>
+</Project>
