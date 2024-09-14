@@ -9,7 +9,7 @@ namespace Matrix;
 /// <summary>
 /// Class representing a matrix of integers.
 /// </summary>
-public class Matrix
+public class Matrix : IEquatable<Matrix>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Matrix"/> class.
@@ -72,6 +72,32 @@ public class Matrix
     public int NumberOfColumns { get; }
 
     /// <summary>
+    /// Gets a value indicating whether this matrix instance is equal to given one.
+    /// </summary>
+    /// <param name="matrix">Matrix to check equality to.</param>
+    /// <returns>Value indicating whether this matrix instance is equal to given one.</returns>
+    public bool Equals(Matrix? matrix)
+        {
+            if (matrix == null || this.NumberOfRows != matrix.NumberOfRows ||
+                this.NumberOfColumns != matrix.NumberOfColumns)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < this.Elements.Length; ++i)
+            {
+                int row = i / this.NumberOfColumns;
+                int column = i % this.NumberOfColumns;
+                if (this.Elements[row, column] != matrix.Elements[row, column])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+    /// <summary>
     /// Writes matrix to specified file.
     /// </summary>
     /// <param name="destinationFile">File to write matrix to.</param>
@@ -85,7 +111,10 @@ public class Matrix
             writer.Write(this.Elements[currentRow, currentColumn]);
             if (currentColumn == this.NumberOfColumns - 1)
             {
-                writer.Write('\n');
+                if (currentRow != this.NumberOfRows - 1)
+                {
+                    writer.Write('\n');
+                }
             }
             else
             {
@@ -107,9 +136,16 @@ public class Matrix
             throw new InvalidDataException("Invalid format: rows of different length");
         }
 
-        for (int i = 0; i < this.NumberOfColumns; ++i)
+        try
         {
-            this.Elements[row, i] = int.Parse(elements[i]);
+            for (int i = 0; i < this.NumberOfColumns; ++i)
+            {
+                this.Elements[row, i] = int.Parse(elements[i]);
+            }
+        }
+        catch (FormatException e)
+        {
+            throw new InvalidDataException($"Invalid format: {e.Message}");
         }
     }
 }
