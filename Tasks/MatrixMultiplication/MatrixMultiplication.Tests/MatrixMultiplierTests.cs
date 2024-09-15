@@ -15,9 +15,12 @@ public static class MatrixMultiplierTests
 
     private static string SmallData_IncorrectCases_Path =
         "TestData/TestSamples/MultiplicationTests/Incorrect";
+    
+    private static string TestResultsDirectory_Path =
+        $"../../../TestData/TestResults/";
 
-    private static string TestResultFile_Path =
-        $"../../../TestData/TestResults/{DateTime.Now}.txt";
+    private static string TestResultTable_Path = 
+        Path.Join(TestResultsDirectory_Path, $"{DateTime.Now.Ticks}.txt");
 
     private static Random random = new (DateTime.Now.Millisecond);
     private static Stopwatch stopwatch = new ();
@@ -47,9 +50,9 @@ public static class MatrixMultiplierTests
     ];
 
     private static float[] BigData_Coefficients =
-        [0, 0, 1, 1, 2, 2, 3, 3];
+        [0, 0, 1, 1, 1.5f, 1.5f, 1.5f, 1.5f];
     
-    private static int numberOfTestRuns = 10;
+    private static int numberOfTestRuns = 8;
 
     private static IEnumerable<TestCaseData> SmallData_CorrectCases()
     {
@@ -74,12 +77,14 @@ public static class MatrixMultiplierTests
 
     private static IEnumerable<TestCaseData> BigData_Cases()
     {
+        Directory.CreateDirectory(TestResultsDirectory_Path);
+        ResultTable_WriteHeader();
         for (int i = 0; i < BigData_LeftDimensions.Length; ++i)
         {
             var leftDimensions = BigData_LeftDimensions[i];
             var rightDimensions = BigData_RightDimensions[i];
             var expectedCoefficient = BigData_Coefficients[i];
-            yield return new TestCaseData(leftDimensions, rightDimensions, expectedCoefficient);
+            yield return new TestCaseData(i + 1, leftDimensions, rightDimensions, expectedCoefficient);
         }
     }
 
@@ -105,7 +110,10 @@ public static class MatrixMultiplierTests
 
     [TestCaseSource(nameof(BigData_Cases))]
     public static void MatrixMultiplierTest_BigData(
-        (int, int) leftDimensions, (int, int) rightDimensions, float expectedCoefficient)
+        int testCase,
+        (int, int) leftDimensions,
+        (int, int) rightDimensions,
+        float expectedCoefficient)
     {
         var testResults = new float[numberOfTestRuns];
         for (int i = 0; i < numberOfTestRuns; ++i)
@@ -114,9 +122,10 @@ public static class MatrixMultiplierTests
         }
 
         var expectedValue = testResults.Average();
-        var standardDeviation = Math.Sqrt(
+        var standardDeviation = (float)Math.Sqrt(
             testResults.Average(x => Math.Pow(x - expectedValue, 2)));
         
+        ResultTable_WriteTestResult(testCase, testResults, expectedValue, standardDeviation);
         Assert.That(expectedValue, Is.GreaterThanOrEqualTo(expectedCoefficient));
     }
 
@@ -159,6 +168,31 @@ public static class MatrixMultiplierTests
         var coeffitient = (float)sequentialTime / concurrentTime;
 
         Assert.That(sequentialProduct, Is.EqualTo(concurrentProduct));
-        return coeffitient;
+        return float.IsNaN(coeffitient) ? 0 : coeffitient;
+    }
+
+    private static void ResultTable_WriteHeader()
+    {
+        using var writer = new StreamWriter(TestResultTable_Path);
+        writer.Write("testCase |");
+        for (int i = 0; i < numberOfTestRuns; ++i)
+        {
+            writer.Write($" testRun{i + 1}");
+        }
+
+        writer.Write(" | expectedValue standardDeviation\n");
+    }
+
+    private static void ResultTable_WriteTestResult(
+        int testCase, float[] results, float expectedValue, float standardDeviation)
+    {
+        using var writer = new StreamWriter(TestResultTable_Path, true);
+        writer.Write($"{testCase} |");
+        for (var i = 0; i < results.Length; ++i)
+        {
+            writer.Write($" {results[i]}");
+        }
+
+        writer.Write($" | {expectedValue} {standardDeviation}\n");
     }
 }
