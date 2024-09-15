@@ -8,9 +8,13 @@ namespace Matrix.Tests;
 
 public static class MatrixTests
 {
-    private static string ConstructorTests_CorrectCases_Path = "TestData/MatrixTests/Correct";
-    private static string ConstructorTests_IncorrectCases_Path = "TestData/MatrixTests/Incorrect";
-    private static string TempDirectory_Path = "tmp";
+    private static string ConstructorTests_CorrectCases_Path =
+        "TestData/TestSamples/MatrixTests/Correct";
+
+    private static string ConstructorTests_IncorrectCases_Path =
+        "TestData/TestSamples/MatrixTests/Incorrect";
+
+    private static string TempDirectory_Path = "TestData/tmp";
 
     private static List<int[,]> TestArrays =
     [

@@ -84,13 +84,14 @@ public class Matrix : IEquatable<Matrix>
                 return false;
             }
 
-            for (int i = 0; i < this.Elements.Length; ++i)
+            for (int i = 0; i < this.NumberOfRows; ++i)
             {
-                int row = i / this.NumberOfColumns;
-                int column = i % this.NumberOfColumns;
-                if (this.Elements[row, column] != matrix.Elements[row, column])
+                for (int j = 0; j < this.NumberOfColumns; ++j)
                 {
-                    return false;
+                    if (this.Elements[i, j] != matrix.Elements[i, j])
+                    {
+                        return false;
+                    }
                 }
             }
 
