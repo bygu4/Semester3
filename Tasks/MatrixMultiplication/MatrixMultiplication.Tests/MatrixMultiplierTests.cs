@@ -50,7 +50,7 @@ public static class MatrixMultiplierTests
     ];
 
     private static float[] BigData_Coefficients =
-        [0, 0, 1, 1, 1.5f, 1.5f, 1.5f, 1.5f];
+        [0, 0, 0.75f, 0.75f, 1.5f, 1.5f, 1.5f, 1.5f];
     
     private static int numberOfTestRuns = 8;
 
