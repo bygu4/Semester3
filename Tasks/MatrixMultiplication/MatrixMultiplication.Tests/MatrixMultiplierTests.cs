@@ -49,8 +49,8 @@ public static class MatrixMultiplierTests
         (100, 1000),
     ];
 
-    private static float[] BigData_Coefficients =
-        [0, 0, 0.75f, 0.75f, 1.5f, 1.5f, 1.5f, 1.5f];
+    private static float[] BigData_MatrixCoefficients =
+        [0, 0, 0.25f, 0.25f, 0.5f, 0.5f, 0.75f, 0.75f];
     
     private static int numberOfTestRuns = 8;
 
@@ -83,7 +83,7 @@ public static class MatrixMultiplierTests
         {
             var leftDimensions = BigData_LeftDimensions[i];
             var rightDimensions = BigData_RightDimensions[i];
-            var expectedCoefficient = BigData_Coefficients[i];
+            var expectedCoefficient = BigData_MatrixCoefficients[i] * Environment.ProcessorCount / 2;
             yield return new TestCaseData(i + 1, leftDimensions, rightDimensions, expectedCoefficient);
         }
     }
