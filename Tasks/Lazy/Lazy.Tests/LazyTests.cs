@@ -23,8 +23,8 @@ public static class LazyTests
     private static Type[] expectedExceptions =
         [typeof(InvalidOperationException), typeof(FileNotFoundException)];
 
-    private static int[] getCounts = [1, 100, 10000];
     private static int[] threadCounts = [2, 8, 64];
+    private static int[] getCounts = [1, 100, 10000];
     private static int numberOfEvaluations;
 
     private static IEnumerable<TestCaseData> OneThread_RegularCases()
@@ -64,48 +64,116 @@ public static class LazyTests
         }
     }
 
+    private static IEnumerable<TestCaseData> Concurrent_RegularCases()
+    {
+        for (int i = 0; i < regularTestMethods.Length; ++i)
+        {
+            var testMethod = regularTestMethods[i];
+            var expectedValue = expectedValues[i];
+            foreach (var threadCount in threadCounts)
+            {
+                foreach (var getCount in getCounts)
+                {
+                    yield return new TestCaseData(
+                        testMethod, expectedValue, threadCount, getCount);
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<TestCaseData> Concurrent_ThrowExceptionCases()
+    {
+        for (int i = 0; i < throwExceptionTestMethods.Length; ++i)
+        {
+            var testMethod = throwExceptionTestMethods[i];
+            var expectedException = expectedExceptions[i];
+            foreach (var threadCount in threadCounts)
+            {
+                foreach (var getCount in getCounts)
+                {
+                    yield return new TestCaseData(
+                        testMethod, expectedException, threadCount, getCount);
+                }
+            }
+        }
+    }
+
+    private static IEnumerable<TestCaseData> Concurrent_NullReturnCases()
+    {
+        foreach (var testMethod in nullReturnTestMethods)
+        {
+            foreach (var threadCount in threadCounts)
+            {
+                foreach (var getCount in getCounts)
+                {
+                    yield return new TestCaseData(
+                        testMethod, threadCount, getCount);
+                }
+            }
+        }
+    }
+
     [TestCaseSource(nameof(OneThread_RegularCases))]
     public static void OneThreadTest_RegularCases<T>(
         Func<T> testMethod, T expectedValue, int numberOfGets)
-        => OneThreadTest_Base(testMethod, testObject =>
-        {
-            for (int i = 0; i < numberOfGets; ++i)
-            {
-                var value = testObject.Get();
-                Assert.That(value, Is.EqualTo(expectedValue));
-            }
-
-            Assert.That(numberOfEvaluations, Is.EqualTo(1));
-        });
+        => OneThreadTest_Base(
+            testMethod,
+            testObject => RegularTestAction(testObject, expectedValue, numberOfGets),
+            () => Assert.That(numberOfEvaluations, Is.EqualTo(1))
+        );
 
     [TestCaseSource(nameof(OneThread_ThrowExceptionCases))]
     public static void OneThreadTest_ThrowExceptionCases<T>(
         Func<T> testMethod, Type expectedException, int numberOfGets)
-        => OneThreadTest_Base(testMethod, testObject =>
-        {
-            for (int i = 0; i < numberOfGets; ++i)
-            {
-                Assert.Throws(expectedException, () => testObject.Get());
-            }
-
-            Assert.That(numberOfEvaluations, Is.EqualTo(numberOfGets));
-        });
+        => OneThreadTest_Base(
+            testMethod,
+            testObject => ThrowExceptionTestAction(testObject, expectedException, numberOfGets),
+            () => Assert.That(numberOfEvaluations, Is.EqualTo(numberOfGets))
+        );
 
     [TestCaseSource(nameof(OneThread_NullReturnCases))]
     public static void OneThreadTest_NullReturnCases<T>(
         Func<T> testMethod, int numberOfGets)
-        => OneThreadTest_Base(testMethod, testObject =>
-        {
-            for (int i = 0; i < numberOfGets; ++i)
-            {
-                Assert.Throws<ArgumentNullException>(() => testObject.Get());
-            }
-
-            Assert.That(numberOfEvaluations, Is.EqualTo(1));
-        });
+        => OneThreadTest_Base(
+            testMethod,
+            testObject => NullReturnTestAction(testObject, numberOfGets),
+            () => Assert.That(numberOfEvaluations, Is.EqualTo(1))
+        );
+    
+    [TestCaseSource(nameof(Concurrent_RegularCases))]
+    public static void ConcurrentTest_RegularCases<T>(
+        Func<T> testMethod, T expectedValue, int numberOfThreads, int numberOfGets)
+        => ConcurrentTest_Base(
+            testMethod,
+            testObject => RegularTestAction(testObject, expectedValue, numberOfGets),
+            () => Assert.That(numberOfEvaluations, Is.EqualTo(1)),
+            numberOfThreads
+        );
+    
+    [TestCaseSource(nameof(Concurrent_ThrowExceptionCases))]
+    public static void ConcurrentTest_ThrowExceptionCases<T>(
+        Func<T> testMethod, Type expectedException, int numberOfThreads, int numberOfGets)
+        => ConcurrentTest_Base(
+            testMethod,
+            testObject => ThrowExceptionTestAction(testObject, expectedException, numberOfGets),
+            () => Assert.That(numberOfEvaluations, Is.EqualTo(numberOfThreads * numberOfGets)),
+            numberOfThreads
+        );
+    
+    [TestCaseSource(nameof(Concurrent_NullReturnCases))]
+    public static void ConcurrentTest_NullReturnCases<T>(
+        Func<T> testMethod, int numberOfThreads, int numberOfGets)
+        => ConcurrentTest_Base(
+            testMethod,
+            testObject => NullReturnTestAction(testObject, numberOfGets),
+            () => Assert.That(numberOfEvaluations, Is.EqualTo(1)),
+            numberOfThreads
+        );
 
     private static void OneThreadTest_Base<T>(
-        Func<T> testMethod, Action<ILazy<T>> testAction)
+        Func<T> testMethod,
+        Action<ILazy<T>> testAction,
+        Action finalAssert)
     {
         ILazy<T>[] testObjects =
             [new SingleThreadLazy<T>(testMethod), new ThreadSafeLazy<T>(testMethod)];
@@ -113,6 +181,57 @@ public static class LazyTests
         {
             numberOfEvaluations = 0;
             testAction(testObject);
+            finalAssert();
+        }
+    }
+
+    private static void ConcurrentTest_Base<T>(
+        Func<T> testMethod,
+        Action<ILazy<T>> testAction,
+        Action finalAssert,
+        int numberOfThreads)
+    {
+        numberOfEvaluations = 0;
+        var testObject = new ThreadSafeLazy<T>(testMethod);
+        var threads = new Thread[numberOfThreads];
+        for (int i = 0; i < numberOfThreads; ++i)
+        {
+            threads[i] = new Thread(() => testAction(testObject));
+            threads[i].Start();
+        }
+
+        foreach (var thread in threads)
+        {
+            thread.Join();
+        }
+
+        finalAssert();
+    }
+
+    private static void RegularTestAction<T>(
+        ILazy<T> testObject, T expectedValue, int numberOfGets)
+    {
+        for (int i = 0; i < numberOfGets; ++i)
+        {
+            Assert.That(testObject.Get(), Is.EqualTo(expectedValue));
+        }
+    }
+
+    private static void ThrowExceptionTestAction<T>(
+        ILazy<T> testObject, Type expectedException, int numberOfGets)
+    {
+        for (int i = 0; i < numberOfGets; ++i)
+        {
+            Assert.Throws(expectedException, () => testObject.Get());
+        }
+    }
+
+    private static void NullReturnTestAction<T>(
+        ILazy<T> testObject, int numberOfGets)
+    {
+        for (int i = 0; i < numberOfGets; ++i)
+        {
+            Assert.Throws<ArgumentNullException>(() => testObject.Get());
         }
     }
 
@@ -120,7 +239,7 @@ public static class LazyTests
 
     private static T BaseTestMethod<T>(Func<T> methodToEvaluate)
     {
-        ++numberOfEvaluations;
+        Interlocked.Increment(ref numberOfEvaluations);
         return methodToEvaluate();
     }
 
