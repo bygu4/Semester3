@@ -14,6 +14,7 @@ namespace MyThreadPool;
 public class MyTask<TResult> : IMyTask<TResult>
 {
     private readonly Func<TResult> methodToEvaluate;
+    private readonly Queue<Action> taskQueue;
     private readonly CancellationToken cancellationToken;
     private readonly object lockObject = new ();
 
@@ -22,13 +23,25 @@ public class MyTask<TResult> : IMyTask<TResult>
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MyTask{TResult}"/> class.
+    /// Adds this task's completion as an Action to given queue.
+    /// Notifies a blocked thread of queue's change of condition.
     /// </summary>
     /// <param name="methodToEvaluate">Method to be evaluated.</param>
+    /// <param name="taskQueue">Queue to add this task to.</param>
     /// <param name="cancellationToken">Token containing task cancellation data.</param>
-    public MyTask(Func<TResult> methodToEvaluate, CancellationToken cancellationToken)
+    public MyTask(
+        Func<TResult> methodToEvaluate,
+        Queue<Action> taskQueue,
+        CancellationToken cancellationToken)
     {
         this.methodToEvaluate = methodToEvaluate;
+        this.taskQueue = taskQueue;
         this.cancellationToken = cancellationToken;
+        lock (this.taskQueue)
+        {
+            this.taskQueue.Enqueue(this.Complete);
+            Monitor.Pulse(this.taskQueue);
+        }
     }
 
     /// <summary>
@@ -42,27 +55,7 @@ public class MyTask<TResult> : IMyTask<TResult>
     /// AggregateException containing thrown Exception instance.
     /// Blocks the calling thread until task's evaluation is finished.
     /// </summary>
-    public TResult Result
-    {
-        get
-        {
-            lock (this.lockObject)
-            {
-                while (!this.IsCompleted && this.thrownException == null)
-                {
-                    Monitor.Wait(this.lockObject);
-                }
-
-                if (this.thrownException != null)
-                {
-                    throw new AggregateException(this.thrownException);
-                }
-
-                ArgumentNullException.ThrowIfNull(this.result);
-                return this.result;
-            }
-        }
-    }
+    public TResult Result => this.GetResult();
 
     /// <summary>
     /// Creates a new task that takes this task's output as input.
@@ -71,24 +64,19 @@ public class MyTask<TResult> : IMyTask<TResult>
     /// <param name="newTask">Method to be evaluated.</param>
     /// <returns>IMyTask instance representing the new task.</returns>
     public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> newTask)
-    {
-        var nextTask = new MyTask<TNewResult>(
-            () => newTask(this.Result), this.cancellationToken);
-        return nextTask;
-    }
+        => new MyTask<TNewResult>(
+            () => newTask(this.Result), this.taskQueue, this.cancellationToken);
 
-    /// <summary>
-    /// Finish this task and update properties of this instance.
-    /// </summary>
-    public void Complete()
+    private void Complete()
     {
-        if (this.cancellationToken.IsCancellationRequested)
-        {
-            throw new TaskCanceledException();
-        }
-
         lock (this.lockObject)
         {
+            if (this.cancellationToken.IsCancellationRequested)
+            {
+                Monitor.PulseAll(this.lockObject);
+                throw new TaskCanceledException();
+            }
+
             try
             {
                 this.result = this.methodToEvaluate();
@@ -99,7 +87,31 @@ public class MyTask<TResult> : IMyTask<TResult>
                 this.thrownException = e;
             }
 
-            Monitor.Pulse(this.lockObject);
+            Monitor.PulseAll(this.lockObject);
+        }
+    }
+
+    private TResult GetResult()
+    {
+        lock (this.lockObject)
+        {
+            while (!this.IsCompleted && this.thrownException == null)
+            {
+                if (this.cancellationToken.IsCancellationRequested)
+                {
+                    throw new TaskCanceledException();
+                }
+
+                Monitor.Wait(this.lockObject);
+            }
+
+            if (this.thrownException != null)
+            {
+                throw new AggregateException(this.thrownException);
+            }
+
+            ArgumentNullException.ThrowIfNull(this.result);
+            return this.result;
         }
     }
 }

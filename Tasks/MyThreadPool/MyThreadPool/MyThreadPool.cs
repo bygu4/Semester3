@@ -22,6 +22,7 @@ public class MyThreadPool
     /// <param name="numberOfThreads">Number of active threads.</param>
     public MyThreadPool(int numberOfThreads)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(numberOfThreads);
         this.threads = new Thread[numberOfThreads];
         for (int i = 0; i < numberOfThreads; ++i)
         {
@@ -37,16 +38,8 @@ public class MyThreadPool
     /// <param name="methodToEvaluate">Method to be evaluated.</param>
     /// <returns>IMyTask implementation representing the accepted task.</returns>
     public IMyTask<TResult> Submit<TResult>(Func<TResult> methodToEvaluate)
-    {
-        var newTask = new MyTask<TResult>(methodToEvaluate, this.cancellation.Token);
-        lock (this.remainingTasks)
-        {
-            this.remainingTasks.Enqueue(newTask.Complete);
-            Monitor.Pulse(this.remainingTasks);
-        }
-
-        return newTask;
-    }
+        => new MyTask<TResult>(
+            methodToEvaluate, this.remainingTasks, this.cancellation.Token);
 
     /// <summary>
     /// Indicates active threads to finish processing tasks.
@@ -64,7 +57,8 @@ public class MyThreadPool
 
     private void ProcessTasks()
     {
-        while (!this.cancellation.IsCancellationRequested)
+        while (!this.cancellation.IsCancellationRequested ||
+            this.remainingTasks.Count > 0)
         {
             this.TakeAndCompleteTask();
         }
