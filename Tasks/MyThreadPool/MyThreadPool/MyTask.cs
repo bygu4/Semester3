@@ -74,7 +74,7 @@ public class MyTask<TResult> : IMyTask<TResult>
             if (this.cancellationToken.IsCancellationRequested)
             {
                 Monitor.PulseAll(this.lockObject);
-                throw new TaskCanceledException();
+                return;
             }
 
             try

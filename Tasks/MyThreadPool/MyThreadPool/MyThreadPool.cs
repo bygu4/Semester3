@@ -48,7 +48,11 @@ public class MyThreadPool
     public void Shutdown()
     {
         this.cancellation.Cancel();
-        Monitor.PulseAll(this.remainingTasks);
+        lock (this.remainingTasks)
+        {
+            Monitor.PulseAll(this.remainingTasks);
+        }
+
         foreach (var thread in this.threads)
         {
             thread.Join();
