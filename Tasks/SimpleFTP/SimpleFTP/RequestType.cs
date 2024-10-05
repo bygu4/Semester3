@@ -1,0 +1,23 @@
+// Copyright (c) 2024
+//
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file or at
+// https://opensource.org/licenses/MIT.
+
+namespace SimpleFTP;
+
+/// <summary>
+/// Enum of possible FTP server request types.
+/// </summary>
+public enum RequestType
+{
+    /// <summary>
+    /// Request for listing all the files in a specified directory.
+    /// </summary>
+    List = 1,
+
+    /// <summary>
+    /// Request for downloading a specified file.
+    /// </summary>
+    Get = 2,
+}
