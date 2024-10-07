@@ -20,6 +20,8 @@ namespace SimpleFTP;
 public class Server(int port)
 {
     private readonly TcpListener tcpListener = new (IPAddress.Any, port);
+
+    private Task? serverTask = null;
     private bool running = false;
 
     /// <summary>
@@ -34,10 +36,7 @@ public class Server(int port)
     {
         this.running = true;
         this.tcpListener.Start();
-        while (this.running)
-        {
-            this.AcceptConnection();
-        }
+        this.serverTask = new Task(this.ListenForConnections);
     }
 
     /// <summary>
@@ -46,6 +45,7 @@ public class Server(int port)
     public void Stop()
     {
         this.running = false;
+        this.serverTask?.Wait();
         this.tcpListener.Stop();
     }
 
@@ -134,10 +134,17 @@ public class Server(int port)
         await writer.WriteLineAsync(line);
     }
 
+    private void ListenForConnections()
+    {
+        while (this.running)
+        {
+            this.AcceptConnection();
+        }
+    }
+
     private async void AcceptConnection()
     {
         using var socket = await this.tcpListener.AcceptSocketAsync();
         await ProcessRequest(socket);
-        socket.Close();
     }
 }
