@@ -13,9 +13,6 @@ namespace SimpleFTP;
 /// <summary>
 /// Simple server for processing file transfer requests.
 /// </summary>
-/// <remarks>
-/// Initializes a new instance of the <see cref="Server"/> class.
-/// </remarks>
 /// <param name="port">Port to listen for connections on.</param>
 public class Server(int port)
 {
@@ -27,7 +24,7 @@ public class Server(int port)
     /// <summary>
     /// Gets port from which the server can be accessed.
     /// </summary>
-    public int Port { get; private set; } = port;
+    public int Port { get; } = port;
 
     /// <summary>
     /// Enables the server to listen for connections.
@@ -51,37 +48,44 @@ public class Server(int port)
 
     private static async Task ProcessRequest(Socket socket)
     {
-        using var stream = new NetworkStream(socket);
-        var command = await ReadLineAsync(stream);
-        if (command == null)
+        try
         {
-            return;
-        }
+            using var stream = new NetworkStream(socket);
+            var request = await Utility.ReadLineAsync(stream);
+            if (request == null)
+            {
+                return;
+            }
 
-        var response = await GetRequestResponse(command);
-        await WriteLineAsync(response, stream);
+            var response = await GetRequestResponse(request);
+            await Utility.WriteLineAsync(response, stream);
+        }
+        finally
+        {
+            socket.Close();
+        }
     }
 
-    private static async Task<string> GetRequestResponse(string command)
+    private static async Task<string> GetRequestResponse(string request)
     {
-        var elements = command.Split(' ');
+        var elements = request.Split(' ');
         if (elements.Length != 2)
         {
             throw new InvalidDataException("Invalid request format");
         }
 
         var (requestTypeRepresentation, path) = (elements[0], elements[1]);
-        var requestType = GetRequestType(requestTypeRepresentation);
+        var requestType = Utility.GetRequestType(requestTypeRepresentation);
 
         return requestType switch
         {
-            RequestType.List => GetListCommandResponse(path),
-            RequestType.Get => await GetGetCommandResponse(path),
+            RequestType.List => GetListRequestResponse(path),
+            RequestType.Get => await GetGetRequestResponse(path),
             _ => throw new InvalidEnumArgumentException("Unknown request type"),
         };
     }
 
-    private static string GetListCommandResponse(string path)
+    private static string GetListRequestResponse(string path)
     {
         if (!Directory.Exists(path))
         {
@@ -93,13 +97,13 @@ public class Server(int port)
         foreach (var file in files)
         {
             var isDirectory = Directory.Exists(file);
-            response += $" ({file} {isDirectory})";
+            response += $" {file} {isDirectory}";
         }
 
         return response;
     }
 
-    private static async Task<string> GetGetCommandResponse(string path)
+    private static async Task<string> GetGetRequestResponse(string path)
     {
         if (!File.Exists(path))
         {
@@ -108,43 +112,26 @@ public class Server(int port)
 
         var content = await File.ReadAllBytesAsync(path);
         var size = content.LongLength;
-        return $"{size} {content}";
-    }
-
-    private static RequestType GetRequestType(string representation)
-    {
-        var parsed = int.TryParse(representation, out var value);
-        if (!parsed)
-        {
-            throw new InvalidDataException("Invalid request format");
-        }
-
-        return (RequestType)value;
-    }
-
-    private static async Task<string?> ReadLineAsync(Stream stream)
-    {
-        using var reader = new StreamReader(stream);
-        return await reader.ReadLineAsync();
-    }
-
-    private static async Task WriteLineAsync(string? line, Stream stream)
-    {
-        using var writer = new StreamWriter(stream);
-        await writer.WriteLineAsync(line);
+        return $"{size} {Convert.ToBase64String(content)}";
     }
 
     private void ListenForConnections()
     {
+        var connections = new List<Task>();
         while (this.running)
         {
-            this.AcceptConnection();
+            connections.Add(this.AcceptConnection());
+        }
+
+        foreach (var connection in connections)
+        {
+            connection.Wait();
         }
     }
 
-    private async void AcceptConnection()
+    private Task AcceptConnection()
     {
-        using var socket = await this.tcpListener.AcceptSocketAsync();
-        await ProcessRequest(socket);
+        var socket = this.tcpListener.AcceptSocket();
+        return ProcessRequest(socket);
     }
 }

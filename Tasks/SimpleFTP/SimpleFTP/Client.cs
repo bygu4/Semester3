@@ -4,11 +4,106 @@
 // that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+#pragma warning disable SA1011 // Closing square brackets should be spaced correctly
+
 namespace SimpleFTP;
 
-public class Client
+using System.Net.Sockets;
+
+/// <summary>
+/// Simple client for making file transfer requests.
+/// </summary>
+/// <param name="hostName">Domen name of host to connect to.</param>
+/// <param name="port">Port to  connect to.</param>
+public class Client(string hostName, int port)
 {
-    public Client()
+    /// <summary>
+    /// Gets domen name to which client can connect.
+    /// </summary>
+    public string HostName { get; } = hostName;
+
+    /// <summary>
+    /// Gets port which client can access.
+    /// </summary>
+    public int Port { get; } = port;
+
+    /// <summary>
+    /// Gets a list of files that are stored in specified directory on the server.
+    /// </summary>
+    /// <param name="path">Path of the directory to list files from.</param>
+    /// <returns>An array of (path, isDirectory) tuples,
+    /// or null if directory was not found.</returns>
+    public async Task<(string, bool)[]?> List(string path)
     {
+        using var client = new TcpClient(this.HostName, this.Port);
+        using var stream = client.GetStream();
+        await MakeListRequest(path, stream);
+        return await ReceiveListResponse(stream);
+    }
+
+    /// <summary>
+    /// Downloads specified file from the server.
+    /// </summary>
+    /// <param name="path">Path of the file to download.</param>
+    /// <returns>Bytes of the specified file,
+    /// of null if file was not found.</returns>
+    public async Task<byte[]?> Get(string path)
+    {
+        using var client = new TcpClient(this.HostName, this.Port);
+        using var stream = client.GetStream();
+        await MakeGetRequest(path, stream);
+        return await ReceiveGetResponse(stream);
+    }
+
+    private static async Task MakeListRequest(string path, Stream stream)
+        => await Utility.WriteLineAsync($"{RequestType.List} {path}", stream);
+
+    private static async Task MakeGetRequest(string path, Stream stream)
+        => await Utility.WriteLineAsync($"{RequestType.Get} {path}", stream);
+
+    private static async Task<(string, bool)[]?> ReceiveListResponse(Stream stream)
+    {
+        var response = await ReadResponse(stream);
+        var elements = response.Split(' ');
+        var directorySize = int.Parse(elements[0]);
+        if (directorySize == -1)
+        {
+            return null;
+        }
+
+        var files = new (string, bool)[directorySize];
+        for (int i = 0; i < directorySize; ++i)
+        {
+            var path = elements[1 + (2 * i)];
+            var isDirectory = bool.Parse(elements[2 + (2 * i)]);
+            files[i] = (path, isDirectory);
+        }
+
+        return files;
+    }
+
+    private static async Task<byte[]?> ReceiveGetResponse(Stream stream)
+    {
+        var response = await ReadResponse(stream);
+        var elements = response.Split(' ');
+        var fileSize = long.Parse(elements[0]);
+        if (fileSize == -1)
+        {
+            return null;
+        }
+
+        var content = elements[1];
+        return Convert.FromBase64String(content);
+    }
+
+    private static async Task<string> ReadResponse(Stream stream)
+    {
+        var response = await Utility.ReadLineAsync(stream);
+        if (response == null)
+        {
+            throw new ArgumentNullException(response);
+        }
+
+        return response;
     }
 }
