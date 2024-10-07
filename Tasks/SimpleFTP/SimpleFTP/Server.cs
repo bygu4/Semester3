@@ -57,8 +57,7 @@ public class Server(int port)
                 return;
             }
 
-            var response = await GetRequestResponse(request);
-            await Utility.WriteLineAsync(response, stream);
+            await RespondToRequest(request, stream);
         }
         finally
         {
@@ -66,7 +65,7 @@ public class Server(int port)
         }
     }
 
-    private static async Task<string> GetRequestResponse(string request)
+    private static async Task RespondToRequest(string request, Stream stream)
     {
         var elements = request.Split(' ');
         if (elements.Length != 2)
@@ -77,42 +76,54 @@ public class Server(int port)
         var (requestTypeRepresentation, path) = (elements[0], elements[1]);
         var requestType = Utility.GetRequestType(requestTypeRepresentation);
 
-        return requestType switch
+        switch (requestType)
         {
-            RequestType.List => GetListRequestResponse(path),
-            RequestType.Get => await GetGetRequestResponse(path),
-            _ => throw new InvalidEnumArgumentException("Unknown request type"),
-        };
+            case RequestType.List:
+                await RespondToListRequest(path, stream);
+                return;
+            case RequestType.Get:
+                RespondToGetRequest(path, stream);
+                return;
+            default:
+                throw new InvalidEnumArgumentException("Unknown request type");
+        }
     }
 
-    private static string GetListRequestResponse(string path)
+    private static async Task RespondToListRequest(string path, Stream stream)
     {
+        using var writer = new StreamWriter(stream);
         if (!Directory.Exists(path))
         {
-            return "-1";
+            await writer.WriteLineAsync("-1");
+            return;
         }
 
         var files = Directory.GetFiles(path);
-        var response = files.Length.ToString();
+        await writer.WriteAsync($"{files.Length}");
         foreach (var file in files)
         {
             var isDirectory = Directory.Exists(file);
-            response += $" {file} {isDirectory}";
+            await writer.WriteAsync($" {file} {isDirectory}");
         }
 
-        return response;
+        await writer.WriteAsync('\n');
     }
 
-    private static async Task<string> GetGetRequestResponse(string path)
+    private static void RespondToGetRequest(string path, Stream stream)
     {
+        using var writer = new BinaryWriter(stream);
         if (!File.Exists(path))
         {
-            return "-1";
+            writer.Write(-1L);
+            return;
         }
 
-        var content = await File.ReadAllBytesAsync(path);
-        var size = content.LongLength;
-        return $"{size} {Convert.ToBase64String(content)}";
+        using var fileStream = File.OpenRead(path);
+        writer.Write(fileStream.Length);
+        for (int i = 0; i < fileStream.Length; ++i)
+        {
+            writer.Write((byte)fileStream.ReadByte());
+        }
     }
 
     private void ListenForConnections()

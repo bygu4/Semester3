@@ -52,7 +52,7 @@ public class Client(string hostName, int port)
         using var client = new TcpClient(this.HostName, this.Port);
         using var stream = client.GetStream();
         await MakeGetRequest(path, stream);
-        return await ReceiveGetResponse(stream);
+        return ReceiveGetResponse(stream);
     }
 
     private static async Task MakeListRequest(string path, Stream stream)
@@ -63,7 +63,7 @@ public class Client(string hostName, int port)
 
     private static async Task<(string, bool)[]?> ReceiveListResponse(Stream stream)
     {
-        var response = await ReadResponse(stream);
+        var response = await ReadListResponse(stream);
         var elements = response.Split(' ');
         var directorySize = int.Parse(elements[0]);
         if (directorySize == -1)
@@ -82,26 +82,30 @@ public class Client(string hostName, int port)
         return files;
     }
 
-    private static async Task<byte[]?> ReceiveGetResponse(Stream stream)
+    private static byte[]? ReceiveGetResponse(Stream stream)
     {
-        var response = await ReadResponse(stream);
-        var elements = response.Split(' ');
-        var fileSize = long.Parse(elements[0]);
+        using var reader = new BinaryReader(stream);
+        var fileSize = reader.ReadInt64();
         if (fileSize == -1)
         {
             return null;
         }
 
-        var content = elements[1];
-        return Convert.FromBase64String(content);
+        var content = new byte[fileSize];
+        for (int i = 0; i < fileSize; ++i)
+        {
+            content[i] = reader.ReadByte();
+        }
+
+        return content;
     }
 
-    private static async Task<string> ReadResponse(Stream stream)
+    private static async Task<string> ReadListResponse(Stream stream)
     {
         var response = await Utility.ReadLineAsync(stream);
         if (response == null)
         {
-            throw new ArgumentNullException(response);
+            throw new ArgumentNullException(nameof(response));
         }
 
         return response;
