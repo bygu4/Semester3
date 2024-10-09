@@ -4,9 +4,10 @@
 // that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
-using System.Net.Sockets;
-
 namespace SimpleFTP.Tests;
+
+using System.Net;
+using System.Net.Sockets;
 
 public static class FTPTests
 {
@@ -24,7 +25,7 @@ public static class FTPTests
     [SetUp]
     public static void SetupServer()
     {
-        server = new Server(Port);
+        server = new Server(IPAddress.Loopback, Port);
         server.Start();
     }
 

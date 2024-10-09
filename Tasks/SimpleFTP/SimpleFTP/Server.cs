@@ -13,14 +13,24 @@ namespace SimpleFTP;
 /// <summary>
 /// Simple server for processing file transfer requests.
 /// </summary>
+/// <remarks>
+/// Initializes a new instance of the <see cref="Server"/> class.
+/// Creates a server with specified local IP address and port.
+/// </remarks>
+/// <param name="localAddress">Local IP address to use.</param>
 /// <param name="port">Port to listen for connections on.</param>
-public class Server(int port)
+public class Server(IPAddress localAddress, int port)
     : IDisposable
 {
-    private readonly TcpListener tcpListener = new (IPAddress.Any, port);
+    private readonly TcpListener tcpListener = new (localAddress, port);
 
     private CancellationTokenSource tokenSource = new ();
     private Task? serverTask = null;
+
+    /// <summary>
+    /// Gets local IP address used by the server.
+    /// </summary>
+    public IPAddress LocalAddress { get; } = localAddress;
 
     /// <summary>
     /// Gets port from which the server can be accessed.
