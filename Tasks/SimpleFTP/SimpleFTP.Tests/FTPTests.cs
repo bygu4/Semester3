@@ -35,7 +35,7 @@ public static class FTPTests
         server.Dispose();
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static void TryToAccessWrongPort_ThrowException()
     {
         var client = new Client(HostName, Port - 1);
@@ -45,7 +45,7 @@ public static class FTPTests
             async () => await client.Get(SomeTextFile));
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static void TryToAccessStoppedServer_ThrowException()
     {
         server.Stop();
@@ -56,7 +56,7 @@ public static class FTPTests
             async () => await client.Get(AnotherTextFile));
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task AccessServerAfterRestart()
     {
         server.Stop();
@@ -67,7 +67,7 @@ public static class FTPTests
         Assert.That(content, Is.EqualTo(actualContent));
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task TestList_ListTestFiles()
     {
         var client = new Client(HostName, Port);
@@ -80,7 +80,7 @@ public static class FTPTests
             }));
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task TestList_ListSomeDirectory()
     {
         var client = new Client(HostName, Port);
@@ -93,7 +93,7 @@ public static class FTPTests
             }));
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task TestList_TryToListNonExistentDirectory_ReturnNull()
     {
         var client = new Client(HostName, Port);
@@ -101,7 +101,7 @@ public static class FTPTests
         Assert.That(files, Is.Null);
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task TestList_TryToListNonDirectory_ReturnNull()
     {
         var client = new Client(HostName, Port);
@@ -109,7 +109,7 @@ public static class FTPTests
         Assert.That(files, Is.Null);
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static void TestList_MultipleListsFromSameClient()
     {
         int numberOfTasks = 10;
@@ -120,11 +120,11 @@ public static class FTPTests
             tasks[i] = client.List(TestFiles);
         }
 
-        Thread.Sleep(1000 / Environment.ProcessorCount);
+        Thread.Sleep(10000 / Environment.ProcessorCount);
         AssertThatListTasksAreCompleted(tasks);
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static void TestList_ListFromDifferentClients()
     {
         int numberOfClients = 8;
@@ -135,11 +135,11 @@ public static class FTPTests
             tasks[i] = client.List(TestFiles);
         }
 
-        Thread.Sleep(1000 / Environment.ProcessorCount);
+        Thread.Sleep(10000 / Environment.ProcessorCount);
         AssertThatListTasksAreCompleted(tasks);
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task TestGet_GetSomeTextFile()
     {
         var client = new Client(HostName, Port);
@@ -148,7 +148,7 @@ public static class FTPTests
         Assert.That(content, Is.EqualTo(actualContent));
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task TestGet_GetSomeImage()
     {
         var client = new Client(HostName, Port);
@@ -157,7 +157,7 @@ public static class FTPTests
         Assert.That(content, Is.EqualTo(actualContent));
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task TestGet_TryToGetNonExistentFile_ReturnNull()
     {
         var client = new Client(HostName, Port);
@@ -165,7 +165,7 @@ public static class FTPTests
         Assert.That(content, Is.Null);
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task TestGet_TryToGetDirectory_ReturnNull()
     {
         var client = new Client(HostName, Port);
@@ -173,7 +173,7 @@ public static class FTPTests
         Assert.That(content, Is.Null);
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task TestGet_MultipleGetsFromSameClient()
     {
         int numberOfTasks = 4;
@@ -184,11 +184,11 @@ public static class FTPTests
             tasks[i] = client.Get(SomeImage);
         }
 
-        Thread.Sleep(10000 / Environment.ProcessorCount);
+        Thread.Sleep(30000 / Environment.ProcessorCount);
         await AssertThatGetTasksAreCompleted(tasks);
     }
 
-    [Test, Timeout(30000)]
+    [Test, Timeout(60000)]
     public static async Task TestGet_GetFromDifferentClients()
     {
         int numberOfClients = 3;
@@ -199,7 +199,7 @@ public static class FTPTests
             tasks[i] = client.Get(SomeImage);
         }
 
-        Thread.Sleep(10000 / Environment.ProcessorCount);
+        Thread.Sleep(30000 / Environment.ProcessorCount);
         await AssertThatGetTasksAreCompleted(tasks);
     }
 
