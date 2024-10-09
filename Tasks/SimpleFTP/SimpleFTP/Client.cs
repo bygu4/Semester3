@@ -56,10 +56,12 @@ public class Client(string hostName, int port)
     }
 
     private static async Task MakeListRequest(string path, Stream stream)
-        => await Utility.WriteLineAsync($"{RequestType.List} {path}", stream);
+        => await Utility.WriteLineAsync(
+            $"{(int)RequestType.List} {path}", stream);
 
     private static async Task MakeGetRequest(string path, Stream stream)
-        => await Utility.WriteLineAsync($"{RequestType.Get} {path}", stream);
+        => await Utility.WriteLineAsync(
+            $"{(int)RequestType.Get} {path}", stream);
 
     private static async Task<(string, bool)[]?> ReceiveListResponse(Stream stream)
     {

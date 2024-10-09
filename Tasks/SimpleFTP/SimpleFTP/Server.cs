@@ -15,11 +15,12 @@ namespace SimpleFTP;
 /// </summary>
 /// <param name="port">Port to listen for connections on.</param>
 public class Server(int port)
+    : IDisposable
 {
     private readonly TcpListener tcpListener = new (IPAddress.Any, port);
 
+    private CancellationTokenSource tokenSource = new ();
     private Task? serverTask = null;
-    private bool running = false;
 
     /// <summary>
     /// Gets port from which the server can be accessed.
@@ -31,9 +32,9 @@ public class Server(int port)
     /// </summary>
     public void Start()
     {
-        this.running = true;
+        this.tokenSource = new CancellationTokenSource();
         this.tcpListener.Start();
-        this.serverTask = new Task(this.ListenForConnections);
+        this.serverTask = this.ListenForConnections();
     }
 
     /// <summary>
@@ -41,9 +42,17 @@ public class Server(int port)
     /// </summary>
     public void Stop()
     {
-        this.running = false;
-        this.serverTask?.Wait();
+        this.tokenSource.Cancel();
         this.tcpListener.Stop();
+        this.serverTask?.Wait();
+    }
+
+    /// <summary>
+    /// Stops the server and releases all used resources.
+    /// </summary>
+    public void Dispose()
+    {
+        this.Stop();
     }
 
     private static async Task ProcessRequest(Socket socket)
@@ -70,7 +79,7 @@ public class Server(int port)
         var elements = request.Split(' ');
         if (elements.Length != 2)
         {
-            throw new InvalidDataException("Invalid request format");
+            return;
         }
 
         var (requestTypeRepresentation, path) = (elements[0], elements[1]);
@@ -83,6 +92,8 @@ public class Server(int port)
                 return;
             case RequestType.Get:
                 RespondToGetRequest(path, stream);
+                return;
+            case RequestType.None:
                 return;
             default:
                 throw new InvalidEnumArgumentException("Unknown request type");
@@ -98,7 +109,7 @@ public class Server(int port)
             return;
         }
 
-        var files = Directory.GetFiles(path);
+        var files = Directory.GetFileSystemEntries(path);
         await writer.WriteAsync($"{files.Length}");
         foreach (var file in files)
         {
@@ -126,23 +137,26 @@ public class Server(int port)
         }
     }
 
-    private void ListenForConnections()
+    private async Task ListenForConnections()
     {
         var connections = new List<Task>();
-        while (this.running)
+        while (!this.tokenSource.IsCancellationRequested)
         {
-            connections.Add(this.AcceptConnection());
+            try
+            {
+                var socket = await this.tcpListener.AcceptSocketAsync(
+                    this.tokenSource.Token);
+                connections.Add(ProcessRequest(socket));
+            }
+            catch (OperationCanceledException)
+            {
+                continue;
+            }
         }
 
         foreach (var connection in connections)
         {
             connection.Wait();
         }
-    }
-
-    private Task AcceptConnection()
-    {
-        var socket = this.tcpListener.AcceptSocket();
-        return ProcessRequest(socket);
     }
 }

@@ -12,6 +12,11 @@ namespace SimpleFTP;
 public enum RequestType
 {
     /// <summary>
+    /// Undefined request type.
+    /// </summary>
+    None = 0,
+
+    /// <summary>
     /// Request for listing all the files in a specified directory.
     /// </summary>
     List = 1,

@@ -15,14 +15,14 @@ public static class Utility
     /// Gets RequestType instance by it's representation.
     /// </summary>
     /// <param name="representation">Representation of RequestType's value.</param>
-    /// <returns>Parsed RequestType instance.</returns>
-    /// <exception cref="InvalidDataException">Failed to parse RequestType.</exception>
+    /// <returns>Parsed RequestType instance,
+    /// or None if parsing failed or value is undefined.</returns>
     public static RequestType GetRequestType(string representation)
     {
         var parsed = int.TryParse(representation, out var value);
-        if (!parsed)
+        if (!parsed || !Enum.IsDefined(typeof(RequestType), value))
         {
-            throw new InvalidDataException("Failed to parse request type");
+            return RequestType.None;
         }
 
         return (RequestType)value;
@@ -35,7 +35,7 @@ public static class Utility
     /// <returns>Task containing data about reading's result.</returns>
     public static async Task<string?> ReadLineAsync(Stream stream)
     {
-        using var reader = new StreamReader(stream);
+        var reader = new StreamReader(stream);
         return await reader.ReadLineAsync();
     }
 
@@ -47,7 +47,8 @@ public static class Utility
     /// <returns>Task containing data about writing's completion.</returns>
     public static async Task WriteLineAsync(string? line, Stream stream)
     {
-        using var writer = new StreamWriter(stream);
+        var writer = new StreamWriter(stream);
         await writer.WriteLineAsync(line);
+        await writer.FlushAsync();
     }
 }
