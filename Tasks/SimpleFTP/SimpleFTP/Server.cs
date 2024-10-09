@@ -124,7 +124,7 @@ public class Server(IPAddress localAddress, int port)
         foreach (var file in files)
         {
             var isDirectory = Directory.Exists(file);
-            await writer.WriteAsync($" {file} {isDirectory}");
+            await writer.WriteAsync($" {GetUniversalPath(file)} {isDirectory}");
         }
 
         await writer.WriteAsync('\n');
@@ -146,6 +146,11 @@ public class Server(IPAddress localAddress, int port)
             writer.Write((byte)fileStream.ReadByte());
         }
     }
+
+    private static string GetUniversalPath(string path)
+        => path.Replace(
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar);
 
     private async Task ListenForConnections()
     {
