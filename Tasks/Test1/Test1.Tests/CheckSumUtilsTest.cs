@@ -6,7 +6,7 @@
 
 namespace CheckSum.Tests;
 
-public class CheckSumUtilsTest
+public static class CheckSumUtilsTest
 {
     private const string TestFilesPath = "TestFiles/";
 
@@ -19,10 +19,19 @@ public class CheckSumUtilsTest
     }
 
     [TestCaseSource(nameof(TestCases))]
-    public async Task TestCheckSumEvaluation(string path)
+    public static async Task TestCheckSumEvaluation_CheckSumsAreEqual(string path)
     {
         var hash1 = CheckSumUtils.GetCheckSumSequentially(path);
         var hash2 = await CheckSumUtils.GetCheckSumConcurrently(path);
         Assert.That(hash1, Is.EqualTo(hash2));
+    }
+
+    [Test]
+    public static void TestCheckSumEvaluation_Unexistent_ThrowException()
+    {
+        Assert.Throws<FileNotFoundException>(
+            () => CheckSumUtils.GetCheckSumSequentially("agsgdffdghgf"));
+        Assert.ThrowsAsync<FileNotFoundException>(
+            async () => await CheckSumUtils.GetCheckSumConcurrently("agsgdffdghgf"));
     }
 }
