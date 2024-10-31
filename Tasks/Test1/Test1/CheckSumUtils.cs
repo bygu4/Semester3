@@ -10,7 +10,7 @@ using System.Text;
 namespace CheckSum;
 
 /// <summary>
-/// Class for evaluating file chack sum.
+/// Class for evaluating file check sums.
 /// </summary>
 public static class CheckSumUtils
 {

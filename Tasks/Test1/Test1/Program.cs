@@ -9,7 +9,7 @@ namespace CheckSum;
 using System.Diagnostics;
 
 /// <summary>
-/// Program that compares the time of sequential an
+/// Program that compares the time of sequential and
 /// concurrent check sum evaluation variations.
 /// </summary>
 public static class Program
