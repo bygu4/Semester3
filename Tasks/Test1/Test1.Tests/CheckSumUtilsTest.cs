@@ -12,14 +12,14 @@ public static class CheckSumUtilsTest
 
     public static IEnumerable<TestCaseData> TestCases()
     {
-        foreach (var testDirectory in Directory.GetDirectories(TestFilesPath))
+        foreach (var testFile in Directory.GetFileSystemEntries(TestFilesPath))
         {
-            yield return new TestCaseData(testDirectory);
+            yield return new TestCaseData(testFile);
         }
     }
 
     [TestCaseSource(nameof(TestCases))]
-    public static async Task TestCheckSumEvaluation_CheckSumsAreEqual(string path)
+    public static async Task TestCheckSumEvaluation_CorrectCases_CheckSumsAreEqual(string path)
     {
         var hash1 = CheckSumUtils.GetCheckSumSequentially(path);
         var hash2 = await CheckSumUtils.GetCheckSumConcurrently(path);
@@ -27,7 +27,7 @@ public static class CheckSumUtilsTest
     }
 
     [Test]
-    public static void TestCheckSumEvaluation_Unexistent_ThrowException()
+    public static void TestCheckSumEvaluation_UnexistentFile_ThrowException()
     {
         Assert.Throws<FileNotFoundException>(
             () => CheckSumUtils.GetCheckSumSequentially("agsgdffdghgf"));
