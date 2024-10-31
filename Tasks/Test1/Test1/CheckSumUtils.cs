@@ -7,12 +7,12 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Test1;
+namespace CheckSum;
 
 /// <summary>
 /// Class for evaluating file chack sum.
 /// </summary>
-public static class CheckSumEvaluator
+public static class CheckSumUtils
 {
     /// <summary>
     /// Evaluate the check sum of given file sequentially.
@@ -68,7 +68,10 @@ public static class CheckSumEvaluator
         var name = Path.GetFileName(path);
         var nameHash = MD5.HashData(Encoding.Unicode.GetBytes(name));
         result.AddRange(nameHash);
-        foreach (var entry in Directory.GetFileSystemEntries(path))
+
+        var entries = Directory.GetFileSystemEntries(path);
+        Array.Sort(entries);
+        foreach (var entry in entries)
         {
             result.AddRange(GetCheckSumSequentially(entry));
         }
@@ -86,25 +89,30 @@ public static class CheckSumEvaluator
     {
         var tasks = new List<Task<byte[]>>();
         var name = Path.GetFileName(path);
-        tasks.Add(Task.Run(() => MD5.HashData(Encoding.Unicode.GetBytes(name))));
-        foreach (var entry in Directory.GetFileSystemEntries(path))
+        var nameHash = MD5.HashData(Encoding.Unicode.GetBytes(name));
+        tasks.Add(Task.Run(() => nameHash));
+
+        var entries = Directory.GetFileSystemEntries(path);
+        Array.Sort(entries);
+        foreach (var entry in entries)
         {
             tasks.Add(GetCheckSumConcurrently(entry));
         }
 
-        int size = 0;
+        var resultSize = 0;
         foreach (var task in tasks)
         {
-            size += task.Result.Length;
+            resultSize += task.Result.Length;
         }
 
-        var result = new byte[size];
-        for (int taskI = 0; taskI < tasks.Count; ++taskI)
+        var result = new byte[resultSize];
+        var currentIndex = 0;
+        foreach (var task in tasks)
         {
-            var task = tasks[taskI];
             for (int i = 0; i < task.Result.Length; ++i)
             {
-                result[i] = task.Result[i];
+                result[currentIndex] = task.Result[i];
+                ++currentIndex;
             }
         }
 
