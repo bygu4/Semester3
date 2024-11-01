@@ -4,12 +4,14 @@
 // that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+using System.Collections;
+
 namespace Matrix;
 
 /// <summary>
 /// Class representing a matrix of integers.
 /// </summary>
-public class Matrix : IEquatable<Matrix>
+public record Matrix : IEquatable<Matrix>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Matrix"/> class.
@@ -30,8 +32,7 @@ public class Matrix : IEquatable<Matrix>
     /// <exception cref="InvalidDataException">File is in invalid format.</exception>
     public Matrix(string sourceFile)
     {
-        var sourceData = this.ReadFile(sourceFile);
-        var rows = sourceData.Split('\n');
+        var rows = File.ReadAllLines(sourceFile);
         this.NumberOfRows = rows.Length;
         if (this.NumberOfRows == 0)
         {
@@ -49,11 +50,11 @@ public class Matrix : IEquatable<Matrix>
         this.Elements = new int[this.NumberOfRows, this.NumberOfColumns];
         for (int i = 1; i < rows.Length; ++i)
         {
-            this.CopyToMatrix(currentRow, i - 1);
+            this.CopyRowToTheMatrix(currentRow, i - 1);
             currentRow = rows[i].Split(' ');
         }
 
-        this.CopyToMatrix(currentRow, this.NumberOfRows - 1);
+        this.CopyRowToTheMatrix(currentRow, this.NumberOfRows - 1);
     }
 
     /// <summary>
@@ -70,33 +71,6 @@ public class Matrix : IEquatable<Matrix>
     /// Gets number of columns in the matrix.
     /// </summary>
     public int NumberOfColumns { get; }
-
-    /// <summary>
-    /// Gets a value indicating whether this matrix instance is equal to given one.
-    /// </summary>
-    /// <param name="matrix">Matrix to check equality to.</param>
-    /// <returns>Value indicating whether this matrix instance is equal to given one.</returns>
-    public bool Equals(Matrix? matrix)
-        {
-            if (matrix == null || this.NumberOfRows != matrix.NumberOfRows ||
-                this.NumberOfColumns != matrix.NumberOfColumns)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < this.NumberOfRows; ++i)
-            {
-                for (int j = 0; j < this.NumberOfColumns; ++j)
-                {
-                    if (this.Elements[i, j] != matrix.Elements[i, j])
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
-        }
 
     /// <summary>
     /// Writes matrix to specified file.
@@ -124,15 +98,43 @@ public class Matrix : IEquatable<Matrix>
         }
     }
 
-    private string ReadFile(string path)
+    /// <summary>
+    /// Gets a value indicating whether this matrix instance is equal to given one.
+    /// </summary>
+    /// <param name="matrix">Matrix to check equality to.</param>
+    /// <returns>Value indicating whether this matrix instance is equal to given one.</returns>
+    public virtual bool Equals(Matrix? matrix)
     {
-        using var reader = new StreamReader(path);
-        return reader.ReadToEnd();
+        if (matrix is null || this.NumberOfRows != matrix.NumberOfRows ||
+            this.NumberOfColumns != matrix.NumberOfColumns)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < this.NumberOfRows; ++i)
+        {
+            for (int j = 0; j < this.NumberOfColumns; ++j)
+            {
+                if (this.Elements[i, j] != matrix.Elements[i, j])
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
-    private void CopyToMatrix(string[] elements, int row)
+    /// <summary>
+    /// Gets the hash code of the Matrix instance.
+    /// </summary>
+    /// <returns>The hash code as an integer.</returns>
+    public override int GetHashCode()
+        => ((IStructuralEquatable)this.Elements).GetHashCode(EqualityComparer<int>.Default);
+
+    private void CopyRowToTheMatrix(string[] rowElements, int rowIndex)
     {
-        if (elements.Length != this.NumberOfColumns)
+        if (rowElements.Length != this.NumberOfColumns)
         {
             throw new InvalidDataException("Invalid format: rows of different length");
         }
@@ -141,7 +143,7 @@ public class Matrix : IEquatable<Matrix>
         {
             for (int i = 0; i < this.NumberOfColumns; ++i)
             {
-                this.Elements[row, i] = int.Parse(elements[i]);
+                this.Elements[rowIndex, i] = int.Parse(rowElements[i]);
             }
         }
         catch (FormatException e)

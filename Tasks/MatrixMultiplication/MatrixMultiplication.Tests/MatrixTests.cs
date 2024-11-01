@@ -61,7 +61,8 @@ public static class MatrixTests
     }
 
     [TestCaseSource(nameof(ConstructorTests_CorrectCases))]
-    public static void ConstructorTest_CorrectCases(string sourcePath, int[,] expectedElements)
+    public static void ConstructorTest_CorrectCases_MatrixIsReadCorrectly(
+        string sourcePath, int[,] expectedElements)
     {
         var matrix = new Matrix(sourcePath);
         var expectedMatrix = new Matrix(expectedElements);
@@ -69,13 +70,15 @@ public static class MatrixTests
     }
 
     [TestCaseSource(nameof(ConstructorTests_IncorrectCases))]
-    public static void ConstructorTest_IncorrectCases(string sourcePath)
+    public static void ConstructorTest_IncorrectCases_ThrowException(
+        string sourcePath)
     {
         Assert.Throws<InvalidDataException>(() => new Matrix(sourcePath));
     }
 
     [TestCaseSource(nameof(WriteMatrixTests_Cases))]
-    public static void WriteMatrixTest(int[,] elements, string destination)
+    public static void WriteMatrixTest_WriteMatrixToFile_MatrixIsUnchangedAfterReading(
+        int[,] elements, string destination)
     {
         var matrix = new Matrix(elements);
         matrix.Write(destination);

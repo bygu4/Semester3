@@ -9,7 +9,7 @@ namespace Matrix;
 /// <summary>
 /// Class for multiplying matrices.
 /// </summary>
-public static class MatrixMultiplier
+public static class MatrixMultiplyUtils
 {
     /// <summary>
     /// Multiply two matrices using one thread.
@@ -93,8 +93,7 @@ public static class MatrixMultiplier
         int chunkIndex,
         int chunkSize)
     {
-        for (int i = chunkIndex * chunkSize;
-            i < (chunkIndex + 1) * chunkSize && i < product.Length; ++i)
+        for (int i = chunkIndex * chunkSize; i < (chunkIndex + 1) * chunkSize && i < product.Length; ++i)
         {
             int row = i / matrix2.NumberOfColumns;
             int column = i % matrix2.NumberOfColumns;

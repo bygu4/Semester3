@@ -8,22 +8,23 @@ using System.Diagnostics;
 
 namespace Matrix.Tests;
 
-public static class MatrixMultiplierTests
+public static class MatrixMultiplyUtilsTests
 {
+    private const int NumberOfTestRuns = 8;
+
     private static string SmallData_CorrectCases_Path =
         "TestData/TestSamples/MultiplicationTests/Correct";
 
     private static string SmallData_IncorrectCases_Path =
         "TestData/TestSamples/MultiplicationTests/Incorrect";
-    
+
     private static string TestResultsDirectory_Path =
-        $"../../../TestData/TestResults/";
+        $"TestData/TestResults/";
 
     private static string TestResultTable_Path = 
         Path.Join(TestResultsDirectory_Path, $"{DateTime.Now.Ticks}.txt");
 
     private static Random random = new (DateTime.Now.Millisecond);
-    private static Stopwatch stopwatch = new ();
 
     private static (int, int)[] BigData_LeftDimensions =
     [
@@ -51,8 +52,6 @@ public static class MatrixMultiplierTests
 
     private static float[] BigData_MatrixCoefficients =
         [0, 0, 0.25f, 0.25f, 0.5f, 0.5f, 0.75f, 0.75f];
-    
-    private static int numberOfTestRuns = 8;
 
     private static IEnumerable<TestCaseData> SmallData_CorrectCases()
     {
@@ -89,36 +88,36 @@ public static class MatrixMultiplierTests
     }
 
     [TestCaseSource(nameof(SmallData_CorrectCases))]
-    public static void MatrixMultiplierTest_SmallData_CorrectCases(
+    public static void MatrixMultiplicationTest_SmallData_GetEqualMatrices(
         Matrix left, Matrix right, Matrix expectedProduct)
     {
-        var sequentialProduct = MatrixMultiplier.MultiplySequentially(left, right);
-        var concurrentProduct = MatrixMultiplier.MultiplyConcurrently(left, right);
+        var sequentialProduct = MatrixMultiplyUtils.MultiplySequentially(left, right);
+        var concurrentProduct = MatrixMultiplyUtils.MultiplyConcurrently(left, right);
         Assert.That(sequentialProduct, Is.EqualTo(expectedProduct));
         Assert.That(concurrentProduct, Is.EqualTo(expectedProduct));
     }
 
     [TestCaseSource(nameof(SmallData_IncorrectCases))]
-    public static void MatrixMultiplierTest_SmallData_IncorrectCases(
+    public static void MatrixMultiplicationTest_IncorrectDimensions_ThrowException(
         Matrix left, Matrix right)
     {
         Assert.Throws<InvalidOperationException>(() =>
-            MatrixMultiplier.MultiplySequentially(left, right));
+            MatrixMultiplyUtils.MultiplySequentially(left, right));
         Assert.Throws<InvalidOperationException>(() =>
-            MatrixMultiplier.MultiplyConcurrently(left, right));
+            MatrixMultiplyUtils.MultiplyConcurrently(left, right));
     }
 
     [TestCaseSource(nameof(BigData_Cases))]
-    public static void MatrixMultiplierTest_BigData(
+    public static void MatrixMultiplicationTest_BigData_GetEqualMatricesAndCheckTimeCoefficient(
         int testCase,
         (int, int) leftDimensions,
         (int, int) rightDimensions,
         float expectedCoefficient)
     {
-        var testResults = new float[numberOfTestRuns];
-        for (int i = 0; i < numberOfTestRuns; ++i)
+        var testResults = new float[NumberOfTestRuns];
+        for (int i = 0; i < NumberOfTestRuns; ++i)
         {
-            testResults[i] = BigData_TestRun(leftDimensions, rightDimensions, expectedCoefficient);
+            testResults[i] = BigData_TestRun(leftDimensions, rightDimensions);
         }
 
         var expectedValue = testResults.Average();
@@ -127,6 +126,21 @@ public static class MatrixMultiplierTests
         
         ResultTable_WriteTestResult(testCase, testResults, expectedValue, standardDeviation);
         Assert.That(expectedValue, Is.GreaterThanOrEqualTo(expectedCoefficient));
+    }
+
+    private static float BigData_TestRun((int, int) leftDimensions, (int, int) rightDimensions)
+    {
+        var left = GenerateMatrix(leftDimensions);
+        var right = GenerateMatrix(rightDimensions);
+
+        var (sequentialProduct, sequentialTime) = MultiplyAndCountTime(
+            left, right, MatrixMultiplyUtils.MultiplySequentially);
+        var (concurrentProduct, concurrentTime) = MultiplyAndCountTime(
+            left, right, MatrixMultiplyUtils.MultiplyConcurrently);
+        var coeffitient = (float)sequentialTime / concurrentTime;
+
+        Assert.That(sequentialProduct, Is.EqualTo(concurrentProduct));
+        return float.IsNaN(coeffitient) ? 0 : coeffitient;
     }
 
     private static Matrix GenerateMatrix((int, int) dimensions)
@@ -147,6 +161,8 @@ public static class MatrixMultiplierTests
     private static (Matrix, long) MultiplyAndCountTime(
         Matrix left, Matrix right, Func<Matrix, Matrix, Matrix> multiplicationMethod)
     {
+        var stopwatch = new Stopwatch();
+
         stopwatch.Restart();
         var product = multiplicationMethod(left, right);
         var elapsedTime = stopwatch.ElapsedMilliseconds;
@@ -155,27 +171,11 @@ public static class MatrixMultiplierTests
         return (product, elapsedTime);
     }
 
-    private static float BigData_TestRun(
-        (int, int) leftDimensions, (int, int) rightDimensions, float expectedCoefficient)
-    {
-        var left = GenerateMatrix(leftDimensions);
-        var right = GenerateMatrix(rightDimensions);
-
-        var (sequentialProduct, sequentialTime) = MultiplyAndCountTime(
-            left, right, MatrixMultiplier.MultiplySequentially);
-        var (concurrentProduct, concurrentTime) = MultiplyAndCountTime(
-            left, right, MatrixMultiplier.MultiplyConcurrently);
-        var coeffitient = (float)sequentialTime / concurrentTime;
-
-        Assert.That(sequentialProduct, Is.EqualTo(concurrentProduct));
-        return float.IsNaN(coeffitient) ? 0 : coeffitient;
-    }
-
     private static void ResultTable_WriteHeader()
     {
         using var writer = new StreamWriter(TestResultTable_Path);
         writer.Write("testCase |");
-        for (int i = 0; i < numberOfTestRuns; ++i)
+        for (int i = 0; i < NumberOfTestRuns; ++i)
         {
             writer.Write($" testRun{i + 1}");
         }
