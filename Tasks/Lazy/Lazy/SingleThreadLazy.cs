@@ -10,20 +10,18 @@ namespace Lazy;
 /// Class representing lazy evaluation.
 /// </summary>
 /// <typeparam name="T">Type of returned object.</typeparam>
-public class SingleThreadLazy<T> : ILazy<T>
+/// <remarks>
+/// Initializes a new instance of the <see cref="SingleThreadLazy{T}"/> class.
+/// </remarks>
+/// <param name="supplier">Function to be evaluated lazily.</param>
+public class SingleThreadLazy<T>(Func<T> supplier)
+    : ILazy<T>
 {
-    private Func<T> supplier;
-    private T? value;
-    private bool isEvaluated = false;
+    private readonly Func<T> supplier = supplier;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SingleThreadLazy{T}"/> class.
-    /// </summary>
-    /// <param name="supplier">Function to be evalueted lazily.</param>
-    public SingleThreadLazy(Func<T> supplier)
-    {
-        this.supplier = supplier;
-    }
+    private T? result;
+    private Exception? thrownException;
+    private bool isEvaluated = false;
 
     /// <summary>
     /// Gets output of the function, evaluated lazily.
@@ -31,14 +29,33 @@ public class SingleThreadLazy<T> : ILazy<T>
     /// <returns>Output of the function.</returns>
     public T Get()
     {
-        if (this.isEvaluated)
+        if (!this.isEvaluated)
         {
-            ArgumentNullException.ThrowIfNull(this.value, "Returned value was null");
-            return this.value;
+            this.EvaluateAndSaveResult();
         }
 
-        this.value = this.supplier();
-        this.isEvaluated = true;
-        return this.Get();
+        if (this.thrownException is not null)
+        {
+            throw this.thrownException;
+        }
+
+        ArgumentNullException.ThrowIfNull(this.result, "Returned value was null");
+        return this.result;
+    }
+
+    private void EvaluateAndSaveResult()
+    {
+        try
+        {
+            this.result = this.supplier();
+        }
+        catch (Exception e)
+        {
+            this.thrownException = e;
+        }
+        finally
+        {
+            this.isEvaluated = true;
+        }
     }
 }

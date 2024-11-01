@@ -11,21 +11,19 @@ namespace Lazy;
 /// Can be accessed by multiple threads concurrently.
 /// </summary>
 /// <typeparam name="T">Type of returned object.</typeparam>
-public class ThreadSafeLazy<T> : ILazy<T>
+/// <remarks>
+/// Initializes a new instance of the <see cref="ThreadSafeLazy{T}"/> class.
+/// </remarks>
+/// <param name="supplier">Function to be evaluated lazily.</param>
+public class ThreadSafeLazy<T>(Func<T> supplier)
+    : ILazy<T>
 {
-    private Func<T> supplier;
-    private T? value;
-    private bool isEvaluated = false;
-    private object lockObject = new ();
+    private readonly Func<T> supplier = supplier;
+    private readonly object lockObject = new ();
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ThreadSafeLazy{T}"/> class.
-    /// </summary>
-    /// <param name="supplier">Function to be evalueted lazily.</param>
-    public ThreadSafeLazy(Func<T> supplier)
-    {
-        this.supplier = supplier;
-    }
+    private T? result;
+    private Exception? thrownException;
+    private volatile bool isEvaluated = false;
 
     /// <summary>
     /// Gets output of the function, evaluated lazily.
@@ -33,23 +31,41 @@ public class ThreadSafeLazy<T> : ILazy<T>
     /// <returns>Output of the function.</returns>
     public T Get()
     {
-        if (this.isEvaluated)
+        if (!this.isEvaluated)
         {
-            ArgumentNullException.ThrowIfNull(this.value, "Returned value was null");
-            return this.value;
+            this.EvaluateAndSaveResult();
         }
 
+        if (this.thrownException is not null)
+        {
+            throw this.thrownException;
+        }
+
+        ArgumentNullException.ThrowIfNull(this.result, "Returned value was null");
+        return this.result;
+    }
+
+    private void EvaluateAndSaveResult()
+    {
         lock (this.lockObject)
         {
             if (this.isEvaluated)
             {
-                ArgumentNullException.ThrowIfNull(this.value, "Returned value was null");
-                return this.value;
+                return;
             }
 
-            this.value = this.supplier();
-            this.isEvaluated = true;
-            return this.Get();
+            try
+            {
+                this.result = this.supplier();
+            }
+            catch (Exception e)
+            {
+                this.thrownException = e;
+            }
+            finally
+            {
+                this.isEvaluated = true;
+            }
         }
     }
 }
