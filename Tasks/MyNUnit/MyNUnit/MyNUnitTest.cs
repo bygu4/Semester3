@@ -25,7 +25,16 @@ public class MyNUnitTest(
     private readonly object? testObject = testObject;
     private readonly MethodInfo testMethod = testMethod;
     private readonly Type? expectedException = expectedException;
-    private readonly string? ignoreReason = ignoreReason;
+
+    /// <summary>
+    /// Gets the name of the test method to run.
+    /// </summary>
+    public string MethodName => this.testMethod.Name;
+
+    /// <summary>
+    /// Gets the reason to ignore the test.
+    /// </summary>
+    public string? IgnoreReason { get; } = ignoreReason;
 
     /// <summary>
     /// Gets a value indicating whether the run test was passed.
@@ -33,9 +42,9 @@ public class MyNUnitTest(
     public bool Passed { get; private set; }
 
     /// <summary>
-    /// Gets the message containing the test result.
+    /// Gets the error message in case of test's fail.
     /// </summary>
-    public string? Message { get; private set; }
+    public string? ErrorMessage { get; private set; }
 
     /// <summary>
     /// Gets the time elapsed during the test run.
@@ -48,10 +57,8 @@ public class MyNUnitTest(
     public void Run()
     {
         this.Passed = true;
-        this.Message = $"-- {this.testMethod.Name}: ";
-        if (this.ignoreReason is not null)
+        if (this.IgnoreReason is not null)
         {
-            this.Message += $"ignored\nReason: {this.ignoreReason}\n";
             return;
         }
 
@@ -64,9 +71,7 @@ public class MyNUnitTest(
             if (e.GetType() != this.expectedException)
             {
                 this.Passed = false;
-                this.Message += $"failed! [{this.Elapsed.Milliseconds} ms]\n";
-                this.Message += $"Message: {e.Message}\n";
-                this.Message += $"Stack Trace:\n{e.StackTrace}\n";
+                this.ErrorMessage = e.ToString();
                 return;
             }
         }
@@ -74,12 +79,9 @@ public class MyNUnitTest(
         if (this.expectedException is not null)
         {
             this.Passed = false;
-            this.Message += $"failed! [{this.Elapsed.Milliseconds} ms]\n";
-            this.Message += $"Expected exception: {this.expectedException}\n";
+            this.ErrorMessage = $"Expected exception: {this.expectedException}\n";
             return;
         }
-
-        this.Message += $"passed [{this.Elapsed.Milliseconds} ms]\n";
     }
 
     private void InvokeTestMethodAndCountTime()

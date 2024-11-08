@@ -9,13 +9,12 @@ namespace MyNUnit.Core;
 using System.Reflection;
 
 /// <summary>
-/// Class for running tests from the given class.
+/// Class for running tests from given class and collecting test results.
 /// </summary>
-public class ClassTestRunner
+public class ClassTestCollector
 {
     private readonly TypeInfo testClass;
     private readonly object? testObject = null;
-    private readonly List<MyNUnitTest> tests = new ();
 
     private MethodInfo? beforeClass = null;
     private MethodInfo? afterClass = null;
@@ -24,10 +23,10 @@ public class ClassTestRunner
     private MethodInfo? afterTest = null;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ClassTestRunner"/> class.
+    /// Initializes a new instance of the <see cref="ClassTestCollector"/> class.
     /// </summary>
-    /// <param name="testClass">Class to run tests from.</param>
-    public ClassTestRunner(TypeInfo testClass)
+    /// <param name="testClass">Class to collect tests from.</param>
+    public ClassTestCollector(TypeInfo testClass)
     {
         this.testClass = testClass;
         if (this.testClass.GetConstructor(Type.EmptyTypes) is not null)
@@ -37,66 +36,36 @@ public class ClassTestRunner
     }
 
     /// <summary>
-    /// Gets a value indicating whether all the run tests were passed.
+    /// Gets the name of the class to test.
     /// </summary>
-    public bool AllTestsPassed { get; private set; }
+    public string ClassName => this.testClass.Name;
 
     /// <summary>
-    /// Gets the summary about the tests run.
+    /// Gets tests collected from the class.
     /// </summary>
-    public string? Summary { get; private set; }
-
-    /// <summary>
-    /// Gets the total number of tests run.
-    /// </summary>
-    public int NumberOfTests { get; private set; }
-
-    /// <summary>
-    /// Gets the number of tests passed.
-    /// </summary>
-    public int NumberOfTestsPassed { get; private set; }
-
-    /// <summary>
-    /// Gets the number of tests failed.
-    /// </summary>
-    public int NumberOfTestsFailed => this.NumberOfTests - this.NumberOfTestsPassed;
-
-    /// <summary>
-    /// Gets the total time elapsed during the test runs.
-    /// </summary>
-    public TimeSpan Elapsed { get; private set; }
+    public List<MyNUnitTest> Tests { get; } = new ();
 
     /// <summary>
     /// Run tests defined in the class according to the attributes.
     /// </summary>
-    public void RunTestsInClass()
+    /// <returns>The class test collector instance after the test run.</returns>
+    public ClassTestCollector CollectAndRunTests()
     {
         foreach (var method in this.testClass.GetMethods())
         {
             this.ResolveMethodAttributes(method);
         }
 
-        this.AllTestsPassed = true;
-        this.Summary = $"{this.testClass.Name}:\n";
-
         this.beforeClass?.Invoke(null, null);
-        foreach (var test in this.tests)
+        foreach (var test in this.Tests)
         {
             this.beforeTest?.Invoke(this.testObject, null);
             test.Run();
             this.afterTest?.Invoke(this.testObject, null);
-
-            this.AllTestsPassed &= test.Passed;
-            this.Summary += test.Message;
-            this.Elapsed += test.Elapsed;
-            ++this.NumberOfTests;
-            if (test.Passed)
-            {
-                ++this.NumberOfTestsPassed;
-            }
         }
 
         this.afterClass?.Invoke(null, null);
+        return this;
     }
 
     private void ResolveMethodAttributes(MethodInfo method)
@@ -140,7 +109,7 @@ public class ClassTestRunner
 
         if (isTest)
         {
-            this.tests.Add(new MyNUnitTest(
+            this.Tests.Add(new MyNUnitTest(
                 this.testObject,
                 method,
                 expectedException,
