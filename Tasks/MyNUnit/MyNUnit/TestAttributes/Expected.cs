@@ -10,13 +10,13 @@ namespace MyNUnit;
 /// Attribute used for specifying the exception
 /// expected to be thrown in the test.
 /// </summary>
-/// <typeparam name="T">Type of the exception expected.</typeparam>
+/// <param name="exceptionType">Type of the exception expected.</param>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public class Expected<T> : Attribute
-    where T : Exception
+public class Expected(Type exceptionType)
+    : Attribute
 {
     /// <summary>
     /// Gets type of the expected exception.
     /// </summary>
-    public Type ExpectedException { get; } = typeof(T);
+    public Type ExceptionType { get; } = exceptionType;
 }
