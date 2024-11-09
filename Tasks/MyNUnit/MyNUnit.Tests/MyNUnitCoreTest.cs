@@ -15,8 +15,9 @@ public static class MyNUnitCoreTest
         (0, 0, 0),
         (0, 0, 0),
         (0, 0, 0),
-        (0, 0, 0),
-        (0, 0, 0),
+        (1, 2, 0),
+        (3, 2, 2),
+        (5, 5, 2),
     ];
 
     private static string[] TestDirectoryPaths

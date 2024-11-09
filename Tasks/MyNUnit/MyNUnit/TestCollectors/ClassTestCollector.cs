@@ -61,9 +61,12 @@ public class ClassTestCollector
         this.beforeClass?.Invoke(null, null);
         foreach (var test in this.tests)
         {
-            this.beforeTest?.Invoke(this.testObject, null);
-            test.Run();
-            this.afterTest?.Invoke(this.testObject, null);
+            if (!test.Ignored)
+            {
+                this.beforeTest?.Invoke(this.testObject, null);
+                test.Run();
+                this.afterTest?.Invoke(this.testObject, null);
+            }
         }
 
         this.afterClass?.Invoke(null, null);
@@ -116,11 +119,11 @@ public class ClassTestCollector
             {
                 ignoreReason = ((Ignore)attribute).Reason;
             }
-            else if (attributeType == typeof(BeforeClass))
+            else if (attributeType == typeof(BeforeClass) && method.IsStatic)
             {
                 this.beforeClass = method;
             }
-            else if (attributeType == typeof(AfterClass))
+            else if (attributeType == typeof(AfterClass) && method.IsStatic)
             {
                 this.afterClass = method;
             }
