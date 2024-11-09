@@ -7,7 +7,7 @@
 using MyNUnit;
 
 // 1 passing, 2 skipping
-public class TestClass1
+public class TestClass5_1
 {
     private static int testNumber = 0;
 

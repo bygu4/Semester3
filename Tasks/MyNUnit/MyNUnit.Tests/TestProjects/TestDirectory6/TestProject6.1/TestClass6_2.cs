@@ -7,7 +7,7 @@
 using MyNUnit;
 
 // 1 passing, 1 failing, 2 skipping
-public class TestClass2
+public class TestClass6_2
 {
     public static bool start = false;
 

@@ -7,7 +7,7 @@
 using MyNUnit;
 
 // 1 passing, 2 failing
-public static class TestClass1
+public static class TestClass4_1
 {
     private static int testNumber = int.MinValue;
     private static string testString = "";

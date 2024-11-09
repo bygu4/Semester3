@@ -7,7 +7,7 @@
 using MyNUnit;
 
 // 4 passing
-public static class TestClass1
+public static class TestClass6_1
 {
     [Test]
     public static void Test1_Passing() => _ = 99;

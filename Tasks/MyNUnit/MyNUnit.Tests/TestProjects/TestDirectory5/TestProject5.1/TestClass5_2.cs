@@ -7,7 +7,7 @@
 using MyNUnit;
 
 // 1 passing, 2 failing
-public static class TestClass2
+public static class TestClass5_2
 {
     [Test]
     [Expected(typeof(IndexOutOfRangeException))]

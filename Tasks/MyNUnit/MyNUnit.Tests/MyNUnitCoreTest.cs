@@ -6,6 +6,8 @@
 
 namespace MyNUnit.Core.Tests;
 
+using NUnit.Framework;
+
 public static class MyNUnitCoreTest
 {
     private const string TestProjectsPath = "TestProjects/";

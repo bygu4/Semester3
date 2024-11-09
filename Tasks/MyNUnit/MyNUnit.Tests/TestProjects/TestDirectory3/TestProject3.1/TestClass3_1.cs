@@ -4,13 +4,6 @@
 // that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
-using MyNUnit;
-
-// 1 passing
-public class TestClass3
+public class TestClass3_1
 {
-    private int testNumber = 100;
-
-    [Test]
-    public void Test1_Passing() => MyAssert.That(testNumber % 2 == 0);
 }

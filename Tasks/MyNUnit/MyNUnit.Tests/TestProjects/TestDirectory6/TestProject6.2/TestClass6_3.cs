@@ -7,7 +7,7 @@
 using MyNUnit;
 
 // 4 failing
-public static class testClass1
+public static class testClass6_3
 {
     [Test]
     public static void Test1_Failing() => throw new SystemException();
