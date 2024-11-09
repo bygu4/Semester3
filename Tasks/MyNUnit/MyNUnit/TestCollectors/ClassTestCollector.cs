@@ -13,12 +13,14 @@ using System.Reflection;
 /// </summary>
 public class ClassTestCollector
 {
+    private const string TestIndent = "- ";
+
     private readonly TypeInfo testClass;
     private readonly object? testObject = null;
+    private readonly List<MyNUnitTest> tests = new ();
 
     private MethodInfo? beforeClass = null;
     private MethodInfo? afterClass = null;
-
     private MethodInfo? beforeTest = null;
     private MethodInfo? afterTest = null;
 
@@ -41,14 +43,14 @@ public class ClassTestCollector
     public string ClassName => this.testClass.Name;
 
     /// <summary>
-    /// Gets tests collected from the class.
+    /// Gets the result of the test run.
     /// </summary>
-    public List<MyNUnitTest> Tests { get; } = new ();
+    public TestResult TestResult { get; private set; } = new ();
 
     /// <summary>
-    /// Run tests defined in the class according to the attributes.
+    /// Run tests defined in the class according to the attributes and collect results.
     /// </summary>
-    /// <returns>The class test collector instance after the test run.</returns>
+    /// <returns>The test collector instance after the test result collection.</returns>
     public ClassTestCollector CollectAndRunTests()
     {
         foreach (var method in this.testClass.GetMethods())
@@ -57,7 +59,7 @@ public class ClassTestCollector
         }
 
         this.beforeClass?.Invoke(null, null);
-        foreach (var test in this.Tests)
+        foreach (var test in this.tests)
         {
             this.beforeTest?.Invoke(this.testObject, null);
             test.Run();
@@ -65,7 +67,32 @@ public class ClassTestCollector
         }
 
         this.afterClass?.Invoke(null, null);
+        this.TestResult = new (this.tests);
         return this;
+    }
+
+    /// <summary>
+    /// Write the summary of the test run for class to the console.
+    /// </summary>
+    public void WriteTestSummary()
+    {
+        Console.WriteLine($"{this.ClassName}:");
+        foreach (var test in this.tests)
+        {
+            if (test.Ignored)
+            {
+                Console.WriteLine(TestIndent + $"{test.MethodName}: ignored. Reason: {test.IgnoreReason}");
+            }
+            else if (test.Passed)
+            {
+                Console.WriteLine(TestIndent + $"{test.MethodName}: passed [{test.Elapsed.Milliseconds} ms]");
+            }
+            else
+            {
+                Console.WriteLine(TestIndent + $"{test.MethodName}: failed! [{test.Elapsed.Milliseconds} ms]");
+                Console.WriteLine(test.ErrorMessage);
+            }
+        }
     }
 
     private void ResolveMethodAttributes(MethodInfo method)
@@ -109,7 +136,7 @@ public class ClassTestCollector
 
         if (isTest)
         {
-            this.Tests.Add(new MyNUnitTest(
+            this.tests.Add(new MyNUnitTest(
                 this.testObject,
                 method,
                 expectedException,

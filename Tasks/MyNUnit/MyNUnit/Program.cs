@@ -13,5 +13,5 @@ if (args.Length != 1)
 }
 
 var path = args[0];
-var passed = await MyNUnitCore.RunTestsFromEachAssembly(path);
-return passed ? 0 : 1;
+var testResult = await MyNUnitCore.RunTestsFromEachAssembly(path, quiet: false);
+return testResult.AllTestsPassed ? 0 : 1;
