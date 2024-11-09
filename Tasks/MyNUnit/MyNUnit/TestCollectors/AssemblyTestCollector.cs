@@ -20,7 +20,7 @@ public class AssemblyTestCollector(Assembly testAssembly)
     /// <summary>
     /// Gets the name of the assembly to test.
     /// </summary>
-    public string AssemblyName => this.testAssembly.GetName().ToString();
+    public string? AssemblyName => this.testAssembly.GetName().Name;
 
     /// <summary>
     /// Gets the result of the test run.
@@ -57,6 +57,11 @@ public class AssemblyTestCollector(Assembly testAssembly)
     /// </summary>
     public void WriteTestSummary()
     {
+        if (this.TestResult.NumberOfTests == 0)
+        {
+            return;
+        }
+
         Console.WriteLine($"\n{this.AssemblyName} test results:\n");
         foreach (var testCollector in this.testCollectors)
         {

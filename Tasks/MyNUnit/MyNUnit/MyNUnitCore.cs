@@ -19,17 +19,17 @@ public static class MyNUnitCore
     /// Each assembly is tested in parallel.
     /// </summary>
     /// <param name="path">Path to look for assemblies at.</param>
-    /// <param name="quiet">Don't write info about the test run to the console.</param>
+    /// <param name="writeToConsole">Write info about the test run to the console.</param>
     /// <returns>The test result representation.</returns>
     public static async Task<TestResult> RunTestsFromEachAssembly(
-        string path, bool quiet = true)
+        string path, bool writeToConsole = false)
     {
         var testAssemblies = Directory.EnumerateFiles(path, "*.dll").Select(Assembly.LoadFrom);
         var tasks = new List<Task<AssemblyTestCollector>>();
 
         foreach (var testAssembly in testAssemblies)
         {
-            if (!quiet)
+            if (writeToConsole)
             {
                 Console.WriteLine($"Running tests from {testAssembly.GetName()}");
             }
@@ -42,7 +42,7 @@ public static class MyNUnitCore
         {
             var testCollector = await task;
             testResult += testCollector.TestResult;
-            if (!quiet)
+            if (writeToConsole)
             {
                 testCollector.WriteTestSummary();
             }

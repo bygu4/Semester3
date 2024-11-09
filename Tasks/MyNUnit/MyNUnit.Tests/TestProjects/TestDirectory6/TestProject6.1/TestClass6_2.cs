@@ -19,11 +19,11 @@ public class TestClass6_2
     public void Test1_Skipping() => throw new NotImplementedException();
 
     [Test]
-    public void Test2_Passing() => MyAssert.That(start);
+    public static void Test2_Passing() => MyAssert.That(start);
 
     [Test]
     [Expected(typeof(InvalidDataException))]
-    public void Test3_Failing() => MyAssert.That(false);
+    public static void Test3_Failing() => MyAssert.That(false);
 
     [Test]
     [Ignore("")]

@@ -70,21 +70,22 @@ public class MyNUnitTest(
         {
             this.InvokeTestMethodAndCountTime();
         }
-        catch (Exception e)
+        catch (TargetInvocationException e)
         {
-            if (e.GetType() != this.expectedException)
+            var innerException = e.InnerException is not null ? e.InnerException : e;
+            if (innerException.GetType() != this.expectedException)
             {
                 this.Passed = false;
-                this.ErrorMessage = e.ToString();
-                return;
+                this.ErrorMessage = "=> " + innerException.ToString() + '\n';
             }
+
+            return;
         }
 
         if (this.expectedException is not null)
         {
             this.Passed = false;
-            this.ErrorMessage = $"Expected exception: {this.expectedException}\n";
-            return;
+            this.ErrorMessage = $"=> Expected {this.expectedException}, but no exception was thrown\n";
         }
     }
 

@@ -78,6 +78,12 @@ public sealed record TestResult : IEquatable<TestResult>
     public int NumberOfTestsSkipped { get; }
 
     /// <summary>
+    /// Gets the total number of tests.
+    /// </summary>
+    public int NumberOfTests
+        => this.NumberOfTestsPassed + this.NumberOfTestsFailed + this.NumberOfTestsSkipped;
+
+    /// <summary>
     /// Gets the total time elapsed during the test runs.
     /// </summary>
     public TimeSpan Elapsed { get; }
@@ -129,6 +135,6 @@ public sealed record TestResult : IEquatable<TestResult>
         Console.WriteLine($"Number of tests passed: {this.NumberOfTestsPassed}");
         Console.WriteLine($"Number of tests failed: {this.NumberOfTestsFailed}");
         Console.WriteLine($"Number of tests skipped: {this.NumberOfTestsSkipped}");
-        Console.WriteLine($"Total elapsed time: {this.Elapsed:mm-ss} mm-ss");
+        Console.WriteLine($"Total elapsed time: {this.Elapsed:mm\\:ss\\:fff} min:sec:ms");
     }
 }

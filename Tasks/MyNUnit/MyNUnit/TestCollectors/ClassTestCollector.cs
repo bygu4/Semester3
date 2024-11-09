@@ -79,6 +79,11 @@ public class ClassTestCollector
     /// </summary>
     public void WriteTestSummary()
     {
+        if (this.TestResult.NumberOfTests == 0)
+        {
+            return;
+        }
+
         Console.WriteLine($"{this.ClassName}:");
         foreach (var test in this.tests)
         {
