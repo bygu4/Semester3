@@ -4,12 +4,12 @@
 // that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
-using MyNUnit.Core;
+namespace MyNUnit.Core;
 
 /// <summary>
 /// Record representing a result of the test run.
 /// </summary>
-public record TestResult
+public sealed record TestResult : IEquatable<TestResult>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TestResult"/> class.
@@ -95,6 +95,30 @@ public record TestResult
             result1.NumberOfTestsSkipped + result2.NumberOfTestsSkipped,
             result1.Elapsed + result2.Elapsed);
     }
+
+    /// <summary>
+    /// Checks if current test result instance is equal to the given one.
+    /// </summary>
+    /// <param name="other">The test result to check equality to.</param>
+    /// <returns>A value indicating whether the test results are equal.</returns>
+    public bool Equals(TestResult? other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        return this.NumberOfTestsPassed == other.NumberOfTestsPassed
+            && this.NumberOfTestsFailed == other.NumberOfTestsFailed
+            && this.NumberOfTestsSkipped == other.NumberOfTestsSkipped;
+    }
+
+    /// <summary>
+    /// Gets the hash code of current test result instance.
+    /// </summary>
+    /// <returns>The evaluated hash code.</returns>
+    public override int GetHashCode()
+        => this.NumberOfTestsPassed + this.NumberOfTestsFailed ^ 2 + this.NumberOfTestsSkipped ^ 3;
 
     /// <summary>
     /// Write the summary of test results to the console.

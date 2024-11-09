@@ -7,14 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyNUnit", "MyNUnit\MyNUnit.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyNUnit.Tests", "MyNUnit.Tests\MyNUnit.Tests.csproj", "{B1646846-EF44-4AB7-B5A2-97A5D249769F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MyNUnit.Tests", "MyNUnit.Tests", "{5D2510F5-6E27-43F0-832B-ACBDB49F41E3}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestProjects", "TestProjects", "{DBC7E5EA-817A-4F97-A7B1-CCED37DA9626}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestProject1", "TestProject1", "{9FBA1E9F-1ADA-422C-B69A-58924DB13B38}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "MyNUnit.Tests\TestProjects\TestProject1\TestProject1\TestProject1.csproj", "{0E6091FA-52D3-41E5-983E-3A968EB6F935}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

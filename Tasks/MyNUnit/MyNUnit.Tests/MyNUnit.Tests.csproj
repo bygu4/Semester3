@@ -21,4 +21,10 @@
     <ProjectReference Include="..\MyNUnit\MyNUnit.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="TestProjects/**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
