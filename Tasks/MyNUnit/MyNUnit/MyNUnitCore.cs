@@ -19,7 +19,7 @@ public static class MyNUnitCore
     /// Each assembly is tested in parallel.
     /// </summary>
     /// <param name="path">Path to look for assemblies at.</param>
-    /// <returns>A value indicating whether all the tests were passed.</returns>
+    /// <returns>A value indicating whether all the run tests were passed.</returns>
     public static async Task<bool> RunTestsFromEachAssembly(string path)
     {
         var testAssemblies = Directory.EnumerateFiles(path, "*.dll").Select(Assembly.LoadFrom);
@@ -27,15 +27,16 @@ public static class MyNUnitCore
 
         foreach (var testAssembly in testAssemblies)
         {
+            Console.WriteLine($"Running tests from {testAssembly.GetName()}");
             tasks.Add(new AssemblyTestCollector(testAssembly).CollectAndRunTests());
         }
 
         var allTestsPassed = true;
         foreach (var task in tasks)
         {
-            var collector = await task;
-            collector.CollectAndWriteTestResults();
-            allTestsPassed &= collector.AllTestsPassed;
+            var testCollector = await task;
+            allTestsPassed &= testCollector.AllTestsPassed;
+            testCollector.WriteTestSummary();
         }
 
         return allTestsPassed;

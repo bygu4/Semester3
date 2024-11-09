@@ -47,13 +47,13 @@ public class AssemblyTestCollector(Assembly testAssembly)
     /// <summary>
     /// Gets a value indicating whether all the run tests were passed.
     /// </summary>
-    public bool AllTestsPassed { get; private set; }
+    public bool AllTestsPassed { get; private set; } = true;
 
     /// <summary>
     /// Run tests from each class found in the assembly.
     /// Each class is tested in parallel.
     /// </summary>
-    /// <returns>The assembly test collector instance after test run.</returns>
+    /// <returns>The assembly test collector instance after the test run.</returns>
     public async Task<AssemblyTestCollector> CollectAndRunTests()
     {
         var testClasses = this.testAssembly.DefinedTypes.Where(t => t.IsClass);
@@ -61,63 +61,78 @@ public class AssemblyTestCollector(Assembly testAssembly)
 
         foreach (var testClass in testClasses)
         {
-            var runner = new ClassTestCollector(testClass);
             tasks.Add(Task.Run(() => new ClassTestCollector(testClass).CollectAndRunTests()));
         }
 
         foreach (var task in tasks)
         {
-            this.classTestCollectors.Add(await task);
+            var testCollector = await task;
+            this.classTestCollectors.Add(testCollector);
+            this.UpdateTestResults(testCollector);
         }
 
         return this;
     }
 
     /// <summary>
-    /// Updates current instance properties and writes test summary to the console.
+    /// Write the summary of collected tests to the console.
     /// </summary>
-    public void CollectAndWriteTestResults()
+    public void WriteTestSummary()
     {
-        this.AllTestsPassed = true;
+        Console.Write('\n');
         Console.WriteLine($"{this.AssemblyName} test results:");
-        foreach (var classTestCollector in this.classTestCollectors)
+        foreach (var testCollector in this.classTestCollectors)
         {
-            this.CollectAndWriteClassTestResults(classTestCollector);
+            this.WriteClassTestResults(testCollector);
         }
 
-        Console.Write('\n');
         Console.WriteLine(this.AllTestsPassed ? "All tests passed!" : "Some tests failed!");
         Console.WriteLine($"Number of tests passed: {this.NumberOfTestsPassed}");
         Console.WriteLine($"Number of tests failed: {this.NumberOfTestsFailed}");
         Console.WriteLine($"Number of tests skipped: {this.NumberOfTestsSkipped}");
-        Console.WriteLine($"Total elapsed time: {this.Elapsed:mm-ss} mm-ss\n");
+        Console.WriteLine($"Total elapsed time: {this.Elapsed:mm-ss} mm-ss");
     }
 
-    private void CollectAndWriteClassTestResults(ClassTestCollector collector)
+    private void UpdateTestResults(ClassTestCollector testCollector)
     {
-        this.AllTestsPassed = true;
-        Console.WriteLine($"{collector.ClassName}:");
-        foreach (var test in collector.Tests)
+        foreach (var test in testCollector.Tests)
         {
             this.AllTestsPassed &= test.Passed;
-            if (test.IgnoreReason is not null)
+            if (test.Ignored)
             {
-                Console.WriteLine(TestIndent + $"{test.MethodName}: ignored. Reason: {test.IgnoreReason}");
                 ++this.NumberOfTestsSkipped;
             }
             else if (test.Passed)
             {
-                Console.WriteLine(TestIndent + $"{test.MethodName}: passed [{test.Elapsed.Milliseconds} ms]");
                 ++this.NumberOfTestsPassed;
+            }
+            else
+            {
+                ++this.NumberOfTestsFailed;
+            }
+
+            this.Elapsed += test.Elapsed;
+        }
+    }
+
+    private void WriteClassTestResults(ClassTestCollector testCollector)
+    {
+        Console.WriteLine($"{testCollector.ClassName}:");
+        foreach (var test in testCollector.Tests)
+        {
+            if (test.Ignored)
+            {
+                Console.WriteLine(TestIndent + $"{test.MethodName}: ignored. Reason: {test.IgnoreReason}");
+            }
+            else if (test.Passed)
+            {
+                Console.WriteLine(TestIndent + $"{test.MethodName}: passed [{test.Elapsed.Milliseconds} ms]");
             }
             else
             {
                 Console.WriteLine(TestIndent + $"{test.MethodName}: failed! [{test.Elapsed.Milliseconds} ms]");
                 Console.WriteLine(test.ErrorMessage);
-                ++this.NumberOfTestsFailed;
             }
-
-            this.Elapsed += test.Elapsed;
         }
     }
 }

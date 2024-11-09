@@ -37,9 +37,14 @@ public class MyNUnitTest(
     public string? IgnoreReason { get; } = ignoreReason;
 
     /// <summary>
-    /// Gets a value indicating whether the run test was passed.
+    /// Gets a value indicating whether the test was passed.
     /// </summary>
-    public bool Passed { get; private set; }
+    public bool Passed { get; private set; } = true;
+
+    /// <summary>
+    /// Gets a value indicating whether the test was ignored.
+    /// </summary>
+    public bool Ignored => this.IgnoreReason is not null;
 
     /// <summary>
     /// Gets the error message in case of test's fail.
@@ -56,8 +61,7 @@ public class MyNUnitTest(
     /// </summary>
     public void Run()
     {
-        this.Passed = true;
-        if (this.IgnoreReason is not null)
+        if (this.Ignored)
         {
             return;
         }
