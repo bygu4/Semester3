@@ -7,6 +7,7 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +20,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyNUnit\MyNUnit.csproj" />
+    <ProjectReference Include="TestProjects\TestDirectory2\TestProject2.1\TestProject2.1.csproj" />
+    <ProjectReference Include="TestProjects\TestDirectory3\TestProject3.1\TestProject3.1.csproj" />
+    <ProjectReference Include="TestProjects\TestDirectory4\TestProject4.1\TestProject4.1.csproj" />
+    <ProjectReference Include="TestProjects\TestDirectory5\TestProject5.1\TestProject5.1.csproj" />
+    <ProjectReference Include="TestProjects\TestDirectory6\TestProject6.1\TestProject6.1.csproj" />
+    <ProjectReference Include="TestProjects\TestDirectory6\TestProject6.2\TestProject6.2.csproj" />
   </ItemGroup>
 
   <ItemGroup>
