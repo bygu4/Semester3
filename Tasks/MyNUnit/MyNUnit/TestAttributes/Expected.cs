@@ -11,7 +11,7 @@ namespace MyNUnit;
 /// expected to be thrown in the test.
 /// </summary>
 /// <param name="exceptionType">Type of the exception expected.</param>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Method)]
 public class Expected(Type exceptionType)
     : Attribute
 {

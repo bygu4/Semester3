@@ -9,7 +9,7 @@ namespace MyNUnit;
 /// <summary>
 /// Attribute used for specifying a test method.
 /// </summary>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Method)]
 public class Test : Attribute
 {
 }

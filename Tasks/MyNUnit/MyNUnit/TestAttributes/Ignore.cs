@@ -10,7 +10,7 @@ namespace MyNUnit;
 /// Attribute used for indicating to ignore the test.
 /// </summary>
 /// <param name="reason">The reason to ignore the test.</param>
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Method)]
 public class Ignore(string reason)
     : Attribute
 {
