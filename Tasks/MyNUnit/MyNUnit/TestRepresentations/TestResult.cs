@@ -41,7 +41,7 @@ public sealed record TestResult : IEquatable<TestResult>
     /// Initializes a new instance of the <see cref="TestResult"/> class.
     /// </summary>
     /// <param name="tests">Collection of tests to collect results from.</param>
-    public TestResult(IList<MyNUnitTest> tests)
+    public TestResult(IEnumerable<MyNUnitTest> tests)
     {
         foreach (var test in tests)
         {
@@ -94,13 +94,11 @@ public sealed record TestResult : IEquatable<TestResult>
     public bool AllTestsPassed => this.NumberOfTestsFailed == 0;
 
     public static TestResult operator +(TestResult result1, TestResult result2)
-    {
-        return new TestResult(
+        => new TestResult(
             result1.NumberOfTestsPassed + result2.NumberOfTestsPassed,
             result1.NumberOfTestsFailed + result2.NumberOfTestsFailed,
             result1.NumberOfTestsIgnored + result2.NumberOfTestsIgnored,
             result1.Elapsed + result2.Elapsed);
-    }
 
     /// <summary>
     /// Checks if current test result instance is equal to the given one.
