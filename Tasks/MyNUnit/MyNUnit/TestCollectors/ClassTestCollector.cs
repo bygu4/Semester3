@@ -14,8 +14,9 @@ using System.Reflection;
 public class ClassTestCollector
 {
     private const string TestIndent = "- ";
+    private const string ErrorMessageIndent = "=> ";
 
-    private readonly TypeInfo testClass;
+    private readonly Type testClass;
     private readonly object? testObject = null;
     private readonly List<MyNUnitTest> tests = new ();
 
@@ -28,7 +29,7 @@ public class ClassTestCollector
     /// Initializes a new instance of the <see cref="ClassTestCollector"/> class.
     /// </summary>
     /// <param name="testClass">Class to collect tests from.</param>
-    public ClassTestCollector(TypeInfo testClass)
+    public ClassTestCollector(Type testClass)
     {
         this.testClass = testClass;
         if (this.testClass.GetConstructor(Type.EmptyTypes) is not null)
@@ -98,7 +99,7 @@ public class ClassTestCollector
             else
             {
                 Console.WriteLine(TestIndent + $"{test.MethodName}: failed! [{test.Elapsed.Milliseconds} ms]");
-                Console.WriteLine(test.ErrorMessage);
+                Console.WriteLine(ErrorMessageIndent + test.ErrorMessage + '\n');
             }
         }
     }

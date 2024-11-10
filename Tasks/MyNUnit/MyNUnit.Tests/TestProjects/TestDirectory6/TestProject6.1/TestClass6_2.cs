@@ -6,7 +6,7 @@
 
 using MyNUnit;
 
-// 1 passing, 1 failing, 2 skipping
+// 1 passing, 1 failing, 2 ignored
 public class TestClass6_2
 {
     public static bool start = false;
@@ -16,7 +16,7 @@ public class TestClass6_2
 
     [Test]
     [Ignore("")]
-    public void Test1_Skipping() => throw new NotImplementedException();
+    public void Test1_Ignored() => throw new NotImplementedException();
 
     [Test]
     public static void Test2_Passing() => MyAssert.That(start);
@@ -27,5 +27,5 @@ public class TestClass6_2
 
     [Test]
     [Ignore("")]
-    public void Test4_Skipping() => _ = 0;
+    public void Test4_Ignored() => _ = 0;
 }

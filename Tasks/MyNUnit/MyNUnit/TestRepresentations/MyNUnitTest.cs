@@ -76,7 +76,7 @@ public class MyNUnitTest(
             if (innerException.GetType() != this.expectedException)
             {
                 this.Passed = false;
-                this.ErrorMessage = "=> " + innerException.ToString() + '\n';
+                this.ErrorMessage = innerException.ToString();
             }
 
             return;
@@ -85,7 +85,7 @@ public class MyNUnitTest(
         if (this.expectedException is not null)
         {
             this.Passed = false;
-            this.ErrorMessage = $"=> Expected {this.expectedException}, but no exception was thrown\n";
+            this.ErrorMessage = $"Expected {this.expectedException}, but no exception was thrown";
         }
     }
 

@@ -6,7 +6,7 @@
 
 using MyNUnit;
 
-// 1 passing, 2 skipping
+// 1 passing, 2 ignored
 public class TestClass5_1
 {
     private static int testNumber = 0;
@@ -16,11 +16,11 @@ public class TestClass5_1
 
     [Test]
     [Ignore("for some reason")]
-    public void Test1_Skipping() => throw new InvalidDataException();
+    public void Test1_Ignored() => throw new InvalidDataException();
 
     [Test]
     [Ignore("again")]
-    public void Test2_Skipping() => MyAssert.That(2 > 0);
+    public void Test2_Ignored() => MyAssert.That(2 > 0);
 
     [Test]
     public void Test3_Passing() => _ = "pass";

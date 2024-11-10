@@ -7,6 +7,8 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +27,7 @@
     <ProjectReference Include="TestProjects\TestDirectory5\TestProject5.1\TestProject5.1.csproj" />
     <ProjectReference Include="TestProjects\TestDirectory6\TestProject6.1\TestProject6.1.csproj" />
     <ProjectReference Include="TestProjects\TestDirectory6\TestProject6.2\TestProject6.2.csproj" />
+    <ProjectReference Include="TestProjects\TestDirectory7\TestProject7.1\TestProject7.1.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,6 +68,12 @@
 
   <ItemGroup>
     <Content Include="TestProjects/TestDirectory6/TestProject6.2.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestProjects/TestDirectory7/TestProject7.1.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

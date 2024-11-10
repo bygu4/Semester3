@@ -20,6 +20,7 @@ public static class MyNUnitCoreTest
         (1, 2, 0),
         (3, 2, 2),
         (5, 5, 2),
+        (2, 1, 1),
     ];
 
     private static string[] TestDirectoryPaths
@@ -37,8 +38,8 @@ public static class MyNUnitCoreTest
         for (int i = 0; i < testResults.Count; ++i)
         {
             var testDirectoryPath = TestDirectoryPaths[i];
-            var (passed, failed, skipped) = testResults[i];
-            var testResult = new TestResult(passed, failed, skipped, default);
+            var (passed, failed, ignored) = testResults[i];
+            var testResult = new TestResult(passed, failed, ignored, default);
             yield return new TestCaseData(testDirectoryPath, testResult);
         }
     }

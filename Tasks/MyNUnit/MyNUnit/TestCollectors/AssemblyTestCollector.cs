@@ -34,7 +34,7 @@ public class AssemblyTestCollector(Assembly testAssembly)
     /// <returns>The test collector instance after the test result collection.</returns>
     public async Task<AssemblyTestCollector> CollectAndRunTests()
     {
-        var testClasses = this.testAssembly.DefinedTypes.Where(t => t.IsClass);
+        var testClasses = this.testAssembly.GetExportedTypes().Where(t => t.IsClass);
         var tasks = new List<Task<ClassTestCollector>>();
 
         foreach (var testClass in testClasses)
