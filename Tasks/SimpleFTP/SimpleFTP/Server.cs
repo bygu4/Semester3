@@ -164,7 +164,7 @@ public class Server(IPAddress localAddress, int port)
 
         foreach (var connection in connections)
         {
-            connection.Wait();
+            await connection;
         }
     }
 }
