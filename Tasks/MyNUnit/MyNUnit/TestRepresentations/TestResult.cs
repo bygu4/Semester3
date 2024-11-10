@@ -127,7 +127,7 @@ public sealed record TestResult : IEquatable<TestResult>
         => this.NumberOfTestsPassed + this.NumberOfTestsFailed ^ 2 + this.NumberOfTestsIgnored ^ 3;
 
     /// <summary>
-    /// Write the summary of test results to the console.
+    /// Write summary of the test run to the console.
     /// </summary>
     public void WriteTestSummary()
     {

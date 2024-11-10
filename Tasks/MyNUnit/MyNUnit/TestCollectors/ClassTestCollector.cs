@@ -13,9 +13,6 @@ using System.Reflection;
 /// </summary>
 public class ClassTestCollector
 {
-    private const string TestIndent = "- ";
-    private const string ErrorMessageIndent = "=> ";
-
     private readonly Type testClass;
     private readonly object? testObject = null;
     private readonly List<MyNUnitTest> tests = new ();
@@ -76,7 +73,7 @@ public class ClassTestCollector
     }
 
     /// <summary>
-    /// Write the summary of the test run for class to the console.
+    /// Write summary of the test run for class to the console.
     /// </summary>
     public void WriteTestSummary()
     {
@@ -88,19 +85,7 @@ public class ClassTestCollector
         Console.WriteLine($"{this.ClassName}:");
         foreach (var test in this.tests)
         {
-            if (test.Ignored)
-            {
-                Console.WriteLine(TestIndent + $"{test.MethodName}: ignored. Reason: {test.IgnoreReason}");
-            }
-            else if (test.Passed)
-            {
-                Console.WriteLine(TestIndent + $"{test.MethodName}: passed [{test.Elapsed.Milliseconds} ms]");
-            }
-            else
-            {
-                Console.WriteLine(TestIndent + $"{test.MethodName}: failed! [{test.Elapsed.Milliseconds} ms]");
-                Console.WriteLine(ErrorMessageIndent + test.ErrorMessage + '\n');
-            }
+            test.WriteTestResult();
         }
     }
 

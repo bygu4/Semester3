@@ -53,7 +53,7 @@ public class AssemblyTestCollector(Assembly testAssembly)
     }
 
     /// <summary>
-    /// Write the summary of the test run for assembly to the console.
+    /// Write summary of the test run for assembly to the console.
     /// </summary>
     public void WriteTestSummary()
     {
