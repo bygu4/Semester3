@@ -13,12 +13,12 @@ using System.Net.Sockets;
 /// <summary>
 /// Simple client for making file transfer requests.
 /// </summary>
-/// <param name="hostName">Domen name of host to connect to.</param>
+/// <param name="hostName">Domain name of host to connect to.</param>
 /// <param name="port">Port to  connect to.</param>
 public class Client(string hostName, int port)
 {
     /// <summary>
-    /// Gets domen name to which client can connect.
+    /// Gets domain name to which client can connect.
     /// </summary>
     public string HostName { get; } = hostName;
 

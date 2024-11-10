@@ -29,6 +29,16 @@ public static class Utility
     }
 
     /// <summary>
+    /// Converts given path to the universal one.
+    /// </summary>
+    /// <param name="path">Path to convert.</param>
+    /// <returns>Converted platform independent path.</returns>
+    public static string GetUniversalPath(string path)
+        => path.Replace(
+            Path.DirectorySeparatorChar,
+            Path.AltDirectorySeparatorChar);
+
+    /// <summary>
     /// Asynchronously read line from given stream.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>

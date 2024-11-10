@@ -60,10 +60,7 @@ public class Server(IPAddress localAddress, int port)
     /// <summary>
     /// Stops the server and releases all used resources.
     /// </summary>
-    public void Dispose()
-    {
-        this.Stop();
-    }
+    public void Dispose() => this.Stop();
 
     private static async Task ProcessRequest(Socket socket)
     {
@@ -124,7 +121,8 @@ public class Server(IPAddress localAddress, int port)
         foreach (var file in files)
         {
             var isDirectory = Directory.Exists(file);
-            await writer.WriteAsync($" {GetUniversalPath(file)} {isDirectory}");
+            var pathOfTheFile = Utility.GetUniversalPath(file);
+            await writer.WriteAsync($" {pathOfTheFile} {isDirectory}");
         }
 
         await writer.WriteAsync('\n');
@@ -146,11 +144,6 @@ public class Server(IPAddress localAddress, int port)
             writer.Write((byte)fileStream.ReadByte());
         }
     }
-
-    private static string GetUniversalPath(string path)
-        => path.Replace(
-            Path.DirectorySeparatorChar,
-            Path.AltDirectorySeparatorChar);
 
     private async Task ListenForConnections()
     {
