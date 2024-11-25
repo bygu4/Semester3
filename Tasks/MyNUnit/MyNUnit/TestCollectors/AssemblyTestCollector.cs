@@ -23,9 +23,9 @@ public class AssemblyTestCollector(Assembly testAssembly)
     public string? AssemblyName => this.testAssembly.GetName().Name;
 
     /// <summary>
-    /// Gets the result of the test run.
+    /// Gets the summary of the test run.
     /// </summary>
-    public TestResult TestResult { get; private set; } = new ();
+    public TestSummary TestSummary { get; private set; } = new ();
 
     /// <summary>
     /// Run tests from each class found in the assembly and collect results.
@@ -46,7 +46,7 @@ public class AssemblyTestCollector(Assembly testAssembly)
         {
             var testCollector = await task;
             this.testCollectors.Add(testCollector);
-            this.TestResult += testCollector.TestResult;
+            this.TestSummary += testCollector.TestSummary;
         }
 
         return this;
@@ -57,7 +57,7 @@ public class AssemblyTestCollector(Assembly testAssembly)
     /// </summary>
     public void WriteTestSummary()
     {
-        if (this.TestResult.NumberOfTests == 0)
+        if (this.TestSummary.NumberOfTests == 0)
         {
             return;
         }
@@ -69,6 +69,6 @@ public class AssemblyTestCollector(Assembly testAssembly)
         }
 
         Console.Write('\n');
-        this.TestResult.WriteTestSummary();
+        this.TestSummary.Write();
     }
 }

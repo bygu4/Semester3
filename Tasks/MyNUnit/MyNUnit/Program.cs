@@ -17,14 +17,14 @@ if (args.Length != 1)
 var path = args[0];
 try
 {
-    var testResult = await MyNUnitCore.RunTestsFromEachAssembly(path, writeToConsole: true);
-    if (testResult.NumberOfTests == 0)
+    var testSummary = await MyNUnitCore.RunTestsFromEachAssembly(path, writeToConsole: true);
+    if (testSummary.NumberOfTests == 0)
     {
         Console.WriteLine("No tests were found");
     }
 
     Console.Write('\n');
-    return testResult.AllTestsPassed ? (int)ReturnCode.AllTestsPassed : (int)ReturnCode.SomeTestsFailed;
+    return testSummary.AllTestsPassed ? (int)ReturnCode.AllTestsPassed : (int)ReturnCode.SomeTestsFailed;
 }
 catch (DirectoryNotFoundException e)
 {

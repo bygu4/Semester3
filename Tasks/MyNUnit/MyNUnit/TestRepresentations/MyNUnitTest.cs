@@ -22,12 +22,20 @@ public class MyNUnitTest(
     Type? expectedException,
     string? ignoreReason)
 {
-    private const string TestIndent = "- ";
-    private const string ErrorMessageIndent = "=> ";
-
     private readonly object? testObject = testObject;
     private readonly MethodInfo testMethod = testMethod;
+    private readonly Type? testClass = testMethod.DeclaringType;
     private readonly Type? expectedException = expectedException;
+
+    /// <summary>
+    /// Gets the name of the assembly in which the test class is declared.
+    /// </summary>
+    public string? AssemblyName => this.testClass?.Assembly.GetName().Name;
+
+    /// <summary>
+    /// Gets the name of the class in which the test method is declared.
+    /// </summary>
+    public string? ClassName => this.testClass?.Name;
 
     /// <summary>
     /// Gets the name of the test method to run.
@@ -37,7 +45,7 @@ public class MyNUnitTest(
     /// <summary>
     /// Gets a value indicating whether the test was passed.
     /// </summary>
-    public bool Passed { get; private set; } = true;
+    public bool Passed => this.ErrorMessage is null;
 
     /// <summary>
     /// Gets a value indicating whether the test was ignored.
@@ -78,7 +86,6 @@ public class MyNUnitTest(
             var innerException = e.InnerException is not null ? e.InnerException : e;
             if (innerException.GetType() != this.expectedException)
             {
-                this.Passed = false;
                 this.ErrorMessage = innerException.ToString();
             }
 
@@ -87,28 +94,7 @@ public class MyNUnitTest(
 
         if (this.expectedException is not null)
         {
-            this.Passed = false;
             this.ErrorMessage = $"Expected {this.expectedException}, but no exception was thrown";
-        }
-    }
-
-    /// <summary>
-    /// Write result of the test run to the console.
-    /// </summary>
-    public void WriteTestResult()
-    {
-        if (this.Ignored)
-        {
-            Console.WriteLine(TestIndent + $"{this.MethodName}: ignored. Reason: {this.IgnoreReason}");
-        }
-        else if (this.Passed)
-        {
-            Console.WriteLine(TestIndent + $"{this.MethodName}: passed [{this.Elapsed.Milliseconds} ms]");
-        }
-        else
-        {
-            Console.WriteLine(TestIndent + $"{this.MethodName}: failed! [{this.Elapsed.Milliseconds} ms]");
-            Console.WriteLine(ErrorMessageIndent + this.ErrorMessage + '\n');
         }
     }
 

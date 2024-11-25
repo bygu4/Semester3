@@ -9,7 +9,10 @@ using MyNUnit;
 // 1 passing, 2 ignored
 public class TestClass5_1
 {
-    private static int testNumber = 0;
+    private static int testNumber = -1;
+
+    [BeforeClass]
+    public static void BeforeClass() => testNumber = 0;
 
     [Before]
     public void BeforeTest() => ++testNumber;

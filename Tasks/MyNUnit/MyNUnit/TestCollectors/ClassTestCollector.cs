@@ -16,6 +16,7 @@ public class ClassTestCollector
     private readonly Type testClass;
     private readonly object? testObject = null;
     private readonly List<MyNUnitTest> tests = new ();
+    private readonly List<TestResult> testResults = new ();
 
     private MethodInfo? beforeClass = null;
     private MethodInfo? afterClass = null;
@@ -41,9 +42,9 @@ public class ClassTestCollector
     public string ClassName => this.testClass.Name;
 
     /// <summary>
-    /// Gets the result of the test run.
+    /// Gets the summary of the test run.
     /// </summary>
-    public TestResult TestResult { get; private set; } = new ();
+    public TestSummary TestSummary => new (this.testResults);
 
     /// <summary>
     /// Run tests defined in the class according to the attributes and collect results.
@@ -65,10 +66,11 @@ public class ClassTestCollector
                 test.Run();
                 this.afterTest?.Invoke(this.testObject, null);
             }
+
+            this.testResults.Add(new TestResult(test));
         }
 
         this.afterClass?.Invoke(null, null);
-        this.TestResult = new (this.tests);
         return this;
     }
 
@@ -77,15 +79,15 @@ public class ClassTestCollector
     /// </summary>
     public void WriteTestSummary()
     {
-        if (this.TestResult.NumberOfTests == 0)
+        if (this.testResults.Count == 0)
         {
             return;
         }
 
         Console.WriteLine($"{this.ClassName}:");
-        foreach (var test in this.tests)
+        foreach (var testResult in this.testResults)
         {
-            test.WriteTestResult();
+            testResult.Write();
         }
     }
 

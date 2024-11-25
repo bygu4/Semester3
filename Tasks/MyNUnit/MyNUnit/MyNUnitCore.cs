@@ -20,8 +20,8 @@ public static class MyNUnitCore
     /// </summary>
     /// <param name="path">Path to look for assemblies at.</param>
     /// <param name="writeToConsole">Write info about the test run to the console.</param>
-    /// <returns>The test result representation.</returns>
-    public static async Task<TestResult> RunTestsFromEachAssembly(
+    /// <returns>The test summary representation.</returns>
+    public static async Task<TestSummary> RunTestsFromEachAssembly(
         string path, bool writeToConsole = false)
     {
         var testAssemblies = Directory.EnumerateFiles(path, "*.dll").Select(Assembly.LoadFrom);
@@ -37,17 +37,17 @@ public static class MyNUnitCore
             tasks.Add(new AssemblyTestCollector(testAssembly).CollectAndRunTests());
         }
 
-        var testResult = new TestResult();
+        var testSummary = new TestSummary();
         foreach (var task in tasks)
         {
             var testCollector = await task;
-            testResult += testCollector.TestResult;
+            testSummary += testCollector.TestSummary;
             if (writeToConsole)
             {
                 testCollector.WriteTestSummary();
             }
         }
 
-        return testResult;
+        return testSummary;
     }
 }

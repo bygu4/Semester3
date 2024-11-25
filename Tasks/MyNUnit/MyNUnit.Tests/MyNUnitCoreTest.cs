@@ -33,27 +33,39 @@ public static class MyNUnitCoreTest
         }
     }
 
-    private static IEnumerable<TestCaseData> TestCases()
+    private static IEnumerable<TestCaseData> CorrectnessTestCases()
     {
         for (int i = 0; i < testResults.Count; ++i)
         {
             var testDirectoryPath = TestDirectoryPaths[i];
-            var (passed, failed, ignored) = testResults[i];
-            var testResult = new TestResult(passed, failed, ignored, default);
-            yield return new TestCaseData(testDirectoryPath, testResult);
+            var (passed, failed, ignored) = testResults[i];;
+            yield return new TestCaseData(testDirectoryPath, passed, failed, ignored);
         }
     }
 
-    [TestCaseSource(nameof(TestCases))]
-    public static async Task TestMyNUnitCore_RunTestsForEachAssembly_GetTestResults(
-        string path, TestResult expectedTestResult)
+    [TestCaseSource(nameof(CorrectnessTestCases))]
+    public static async Task TestCorrectness_RunTestsForEachAssembly_TestResultsAreCorrect(
+        string path,
+        int testsPassed,
+        int testsFailed,
+        int testsIgnored)
     {
-        var actualTestResult = await MyNUnitCore.RunTestsFromEachAssembly(path);
-        Assert.That(actualTestResult, Is.EqualTo(expectedTestResult));
+        var testResult = await MyNUnitCore.RunTestsFromEachAssembly(path);
+        Assert.That(testResult.NumberOfTestsPassed, Is.EqualTo(testsPassed));
+        Assert.That(testResult.NumberOfTestsFailed, Is.EqualTo(testsFailed));
+        Assert.That(testResult.NumberOfTestsIgnored, Is.EqualTo(testsIgnored));
+    }
+
+    [TestCaseSource(nameof(TestDirectoryPaths))]
+    public static async Task TestConsistency_RunTestsTwice_TestResultsAreEqual(string path)
+    {
+        var testResult1 = await MyNUnitCore.RunTestsFromEachAssembly(path);
+        var testResult2 = await MyNUnitCore.RunTestsFromEachAssembly(path);
+        Assert.That(testResult1, Is.EqualTo(testResult2));
     }
 
     [TestAttribute]
-    public static void TestMyNUnitCore_RunTestsForNonExistentDirectory_ThrowException()
+    public static void TestStability_RunTestsForNonExistentDirectory_ThrowException()
         => Assert.ThrowsAsync<DirectoryNotFoundException>(
             () => MyNUnitCore.RunTestsFromEachAssembly("mboieuibnui"));
 }
