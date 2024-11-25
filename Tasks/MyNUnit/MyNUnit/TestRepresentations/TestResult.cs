@@ -101,16 +101,21 @@ public sealed record TestResult : IEquatable<TestResult>
     {
         if (this.Ignored)
         {
+            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine(TestIndent + $"{this.MethodName}: ignored. Reason: {this.IgnoreReason}");
         }
         else if (this.Passed)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(TestIndent + $"{this.MethodName}: passed [{this.Elapsed.Milliseconds} ms]");
         }
         else
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(TestIndent + $"{this.MethodName}: failed! [{this.Elapsed.Milliseconds} ms]");
             Console.WriteLine(ErrorMessageIndent + this.ErrorMessage + '\n');
         }
+
+        Console.ResetColor();
     }
 }

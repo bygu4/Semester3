@@ -113,10 +113,12 @@ public sealed record TestSummary : IEquatable<TestSummary>
     /// </summary>
     public void Write()
     {
+        Console.ForegroundColor = this.AllTestsPassed ? ConsoleColor.Green : ConsoleColor.Red;
         Console.WriteLine(this.AllTestsPassed ? "All tests passed!" : "Some tests failed!");
         Console.WriteLine($"Number of tests passed: {this.NumberOfTestsPassed}");
         Console.WriteLine($"Number of tests failed: {this.NumberOfTestsFailed}");
         Console.WriteLine($"Number of tests ignored: {this.NumberOfTestsIgnored}");
         Console.WriteLine($"Total elapsed time: {this.Elapsed:mm\\:ss\\:fff} min:sec:ms");
+        Console.ResetColor();
     }
 }
