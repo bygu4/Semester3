@@ -17,7 +17,7 @@ public static class Reflector
     {
         var indent = GetIndent(numberOfTabs);
         await WriteClassInfo(someClass, numberOfTabs, writer);
-        await writer.WriteAsync(indent + '{');
+        await writer.WriteLineAsync(indent + '{');
         foreach (var field in someClass.GetFields())
         {
             await PrintField(field, numberOfTabs + 1, writer);
@@ -35,7 +35,7 @@ public static class Reflector
             await PrintStructureInternal(nestedClass, numberOfTabs + 1, writer);
         }
 
-        await writer.WriteAsync(indent + '}');
+        await writer.WriteLineAsync(indent + '}');
     }
 
     private static async Task WriteClassInfo(

@@ -5,7 +5,7 @@ using NUnit.Framework;
 public static class ReflectorTest
 {
     private const string ExpectedOutputPath1 = "ExpectedOutput/Output1.txt";
-    private const string ResultPath = "TestClass.cs";
+    private const string ResultPath = "TestClass1.cs";
 
     [Test]
     public static async Task TestReflector_PrintStructure_CompareResults()
@@ -16,7 +16,8 @@ public static class ReflectorTest
         Assert.That(actualOutput, Is.EqualTo(expectedOutput));
     }
 
-    public static async Task TestReflector_PrintSomeTypes()
+    [Test]
+    public static async Task TestReflector_PrintSomeTypes_NotThrowException()
     {
         await Reflector.PrintStructure(typeof(Int32));
         await Reflector.PrintStructure(typeof(String));
