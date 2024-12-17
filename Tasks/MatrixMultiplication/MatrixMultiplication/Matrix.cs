@@ -6,7 +6,7 @@
 
 using System.Collections;
 
-namespace Matrix;
+namespace MatrixMultiplication;
 
 /// <summary>
 /// Class representing a matrix of integers.
