@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2024
+﻿// Copyright (c) Alexander Bugaev 2024
 //
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file or at
@@ -50,21 +50,25 @@ public class Server(IPAddress localAddress, int port)
     /// <summary>
     /// Stops the server from listening for connections.
     /// </summary>
-    public void Stop()
+    /// <returns>The task representing the server stop.</returns>
+    public async Task Stop()
     {
         this.tokenSource.Cancel();
         this.tcpListener.Stop();
-        this.serverTask?.Wait();
+        if (this.serverTask is not null)
+        {
+            await this.serverTask;
+        }
     }
 
     /// <summary>
     /// Stops the server and releases all used resources.
     /// </summary>
-    public void Dispose() => this.Stop();
+    public void Dispose() => this.Stop().Wait();
 
     private static async Task ProcessRequest(Socket socket)
     {
-        try
+        using (socket)
         {
             using var stream = new NetworkStream(socket);
             var request = await Utility.ReadLineAsync(stream);
@@ -74,10 +78,6 @@ public class Server(IPAddress localAddress, int port)
             }
 
             await RespondToRequest(request, stream);
-        }
-        finally
-        {
-            socket.Close();
         }
     }
 

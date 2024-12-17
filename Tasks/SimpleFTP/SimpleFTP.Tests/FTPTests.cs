@@ -1,14 +1,19 @@
-// Copyright (c) 2024
+// Copyright (c) Alexander Bugaev 2024
 //
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
+
+#pragma warning disable SA1011 // Closing square brackets should be spaced correctly
 
 namespace SimpleFTP.Tests;
 
 using System.Net;
 using System.Net.Sockets;
 
+/// <summary>
+/// Tests for the FTP server and client.
+/// </summary>
 public static class FTPTests
 {
     private const string HostName = "localhost";
@@ -20,8 +25,11 @@ public static class FTPTests
     private const string AnotherTextFile = "TestFiles/SomeDirectory/AnotherTextFile.doc";
     private const string SomeImage = "TestFiles/SomeDirectory/SomeImage.jpg";
 
-    private static Server server;
+    private static Server? server;
 
+    /// <summary>
+    /// Starts the server before the test.
+    /// </summary>
     [SetUp]
     public static void SetupServer()
     {
@@ -29,13 +37,20 @@ public static class FTPTests
         server.Start();
     }
 
+    /// <summary>
+    /// Stops the server after the test.
+    /// </summary>
     [TearDown]
     public static void StopServer()
     {
-        server.Dispose();
+        server?.Dispose();
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the client trying to access wrong port.
+    /// </summary>
+    [Test]
+    [Timeout(60000)]
     public static void TryToAccessWrongPort_ThrowException()
     {
         var client = new Client(HostName, Port - 1);
@@ -45,10 +60,14 @@ public static class FTPTests
             async () => await client.Get(SomeTextFile));
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the client trying to access stopped server.
+    /// </summary>
+    [Test]
+    [Timeout(60000)]
     public static void TryToAccessStoppedServer_ThrowException()
     {
-        server.Stop();
+        server?.Dispose();
         var client = new Client(HostName, Port);
         Assert.ThrowsAsync<SocketException>(
             async () => await client.List(SomeDirectory));
@@ -56,18 +75,28 @@ public static class FTPTests
             async () => await client.Get(AnotherTextFile));
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests accessing the server after restart.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task AccessServerAfterRestart()
     {
-        server.Stop();
-        server.Start();
+        server?.Dispose();
+        server?.Start();
         var client = new Client(HostName, Port);
         var content = await client.Get(SomeImage);
         var actualContent = await File.ReadAllBytesAsync(SomeImage);
         Assert.That(content, Is.EqualTo(actualContent));
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the directory listing containing nested directories.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task TestList_ListTestFiles()
     {
         var client = new Client(HostName, Port);
@@ -76,11 +105,16 @@ public static class FTPTests
             new (string, bool)[]
             {
                 (SomeDirectory, true),
-                (SomeTextFile, false)
+                (SomeTextFile, false),
             }));
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the directory listing not containing nested directories.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task TestList_ListSomeDirectory()
     {
         var client = new Client(HostName, Port);
@@ -89,11 +123,16 @@ public static class FTPTests
             new (string, bool)[]
             {
                 (AnotherTextFile, false),
-                (SomeImage, false)
+                (SomeImage, false),
             }));
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the client trying to list non existing directory.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task TestList_TryToListNonExistentDirectory_ReturnNull()
     {
         var client = new Client(HostName, Port);
@@ -101,7 +140,12 @@ public static class FTPTests
         Assert.That(files, Is.Null);
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the client trying to list not a directory.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task TestList_TryToListNonDirectory_ReturnNull()
     {
         var client = new Client(HostName, Port);
@@ -109,7 +153,11 @@ public static class FTPTests
         Assert.That(files, Is.Null);
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the multiple listing from same client.
+    /// </summary>
+    [Test]
+    [Timeout(60000)]
     public static void TestList_MultipleListsFromSameClient()
     {
         int numberOfTasks = 10;
@@ -124,7 +172,11 @@ public static class FTPTests
         AssertThatListTasksAreCompleted(tasks);
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the listing from different clients.
+    /// </summary>
+    [Test]
+    [Timeout(60000)]
     public static void TestList_ListFromDifferentClients()
     {
         int numberOfClients = 8;
@@ -139,7 +191,12 @@ public static class FTPTests
         AssertThatListTasksAreCompleted(tasks);
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the text file downloading.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task TestGet_GetSomeTextFile()
     {
         var client = new Client(HostName, Port);
@@ -148,7 +205,12 @@ public static class FTPTests
         Assert.That(content, Is.EqualTo(actualContent));
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the image downloading.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task TestGet_GetSomeImage()
     {
         var client = new Client(HostName, Port);
@@ -157,7 +219,12 @@ public static class FTPTests
         Assert.That(content, Is.EqualTo(actualContent));
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the client trying to download non existing file.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task TestGet_TryToGetNonExistentFile_ReturnNull()
     {
         var client = new Client(HostName, Port);
@@ -165,7 +232,12 @@ public static class FTPTests
         Assert.That(content, Is.Null);
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the client trying to download a directory.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task TestGet_TryToGetDirectory_ReturnNull()
     {
         var client = new Client(HostName, Port);
@@ -173,7 +245,12 @@ public static class FTPTests
         Assert.That(content, Is.Null);
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the multiple downloading from the same client.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task TestGet_MultipleGetsFromSameClient()
     {
         int numberOfTasks = 4;
@@ -188,7 +265,12 @@ public static class FTPTests
         await AssertThatGetTasksAreCompleted(tasks);
     }
 
-    [Test, Timeout(60000)]
+    /// <summary>
+    /// Tests the downloading from different clients.
+    /// </summary>
+    /// <returns>The task representing the test.</returns>
+    [Test]
+    [Timeout(60000)]
     public static async Task TestGet_GetFromDifferentClients()
     {
         int numberOfClients = 3;
@@ -209,7 +291,7 @@ public static class FTPTests
         var expectedResult = new (string, bool)[]
         {
             (SomeDirectory, true),
-            (SomeTextFile, false)
+            (SomeTextFile, false),
         };
 
         foreach (var task in tasks)
