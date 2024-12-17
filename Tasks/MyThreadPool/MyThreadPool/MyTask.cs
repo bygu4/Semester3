@@ -1,4 +1,4 @@
-// Copyright (c) 2024
+// Copyright (c) Alexander Bugaev 2024
 //
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file or at
@@ -11,7 +11,7 @@ namespace MyThreadPool;
 /// Contains data about task's completion.
 /// </summary>
 /// <typeparam name="TResult">Type of task's result.</typeparam>
-public class MyTask<TResult> : IMyTask<TResult>
+internal class MyTask<TResult> : IMyTask<TResult>
 {
     private readonly Func<TResult> methodToEvaluate;
     private readonly Queue<Action> taskQueue;
