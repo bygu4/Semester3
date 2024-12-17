@@ -1,4 +1,4 @@
-// Copyright (c) 2024
+// Copyright (c) Alexander Bugaev 2024
 //
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file or at
@@ -6,6 +6,9 @@
 
 namespace Lazy.Tests;
 
+/// <summary>
+/// Tests for ILazy interface implementations.
+/// </summary>
 public static class LazyTests
 {
     private static Delegate[] regularTestMethods =
@@ -18,14 +21,106 @@ public static class LazyTests
         [NullReturnTestMethod1, NullReturnTestMethod2];
 
     private static object[] expectedValues =
-        [14, "HELL0 W0RLD!", new float[] {0, 0.5f, 2, 4.5f, 8, 12.5f}];
+        [14, "HELL0 W0RLD!", new float[] { 0, 0.5f, 2, 4.5f, 8, 12.5f }];
 
     private static Type[] expectedExceptions =
         [typeof(InvalidOperationException), typeof(FileNotFoundException)];
 
-    private static int[] threadCounts = [2, 8, 64];
-    private static int[] getCounts = [1, 100, 10000];
+    private static int[] threadCounts =
+        [2, 8, 64];
+
+    private static int[] getCounts =
+        [1, 100, 10000];
+
     private static int numberOfEvaluations;
+
+    /// <summary>
+    /// Tests the general single thread lazy evaluation.
+    /// </summary>
+    /// <typeparam name="T">Type of the returned value.</typeparam>
+    /// <param name="testMethod">Method to evaluate lazily.</param>
+    /// <param name="expectedValue">The expected returned value.</param>
+    /// <param name="numberOfGets">Number of times to evaluate the given method.</param>
+    [TestCaseSource(nameof(OneThread_RegularCases))]
+    public static void OneThreadTest_RegularCases_GetExpectedValueEvaluatedOnce<T>(
+        Func<T> testMethod, T expectedValue, int numberOfGets)
+        => OneThreadTest_Base(
+            testMethod,
+            testObject => RegularTestAction(testObject, expectedValue, numberOfGets));
+
+    /// <summary>
+    /// Tests the single thread lazy evaluation with an exception thrown.
+    /// </summary>
+    /// <typeparam name="T">Type of the returned value.</typeparam>
+    /// <param name="testMethod">Method to evaluate lazily.</param>
+    /// <param name="expectedException">The exception expected to be thrown.</param>
+    /// <param name="numberOfGets">Number of times to evaluate the given method.</param>
+    [TestCaseSource(nameof(OneThread_ThrowExceptionCases))]
+    public static void OneThreadTest_ThrowExceptionCases_ThrowExceptionEvaluatedOnce<T>(
+        Func<T> testMethod, Type expectedException, int numberOfGets)
+        => OneThreadTest_Base(
+            testMethod,
+            testObject => ThrowExceptionTestAction(testObject, expectedException, numberOfGets));
+
+    /// <summary>
+    /// Tests the single thread lazy evaluation with null return.
+    /// </summary>
+    /// <typeparam name="T">Type of the returned value.</typeparam>
+    /// <param name="testMethod">Method to evaluate lazily.</param>
+    /// <param name="numberOfGets">Number of times to evaluate the given method.</param>
+    [TestCaseSource(nameof(OneThread_NullReturnCases))]
+    public static void OneThreadTest_NullReturnCases_ThrowExceptionEvaluatedOnce<T>(
+        Func<T> testMethod, int numberOfGets)
+        => OneThreadTest_Base(
+            testMethod,
+            testObject => ThrowExceptionTestAction(testObject, typeof(ArgumentNullException), numberOfGets));
+
+    /// <summary>
+    /// Tests the general thread safe lazy evaluation.
+    /// </summary>
+    /// <typeparam name="T">Type of the returned value.</typeparam>
+    /// <param name="testMethod">Method to evaluate lazily.</param>
+    /// <param name="expectedValue">The expected returned value.</param>
+    /// <param name="numberOfThreads">Number of threads to evaluate the given method in.</param>
+    /// <param name="numberOfGets">Number of times to evaluate the given method.</param>
+    [TestCaseSource(nameof(Concurrent_RegularCases))]
+    public static void ConcurrentTest_RegularCases_GetExpectedValueEvaluatedOnce<T>(
+        Func<T> testMethod, T expectedValue, int numberOfThreads, int numberOfGets)
+        => ConcurrentTest_Base(
+            testMethod,
+            testObject => RegularTestAction(testObject, expectedValue, numberOfGets),
+            numberOfThreads);
+
+    /// <summary>
+    /// Tests the thread safe lazy evaluation with an exception thrown.
+    /// </summary>
+    /// <typeparam name="T">Type of the returned value.</typeparam>
+    /// <param name="testMethod">Method to evaluate lazily.</param>
+    /// <param name="expectedException">The exception expected to be thrown.</param>
+    /// <param name="numberOfThreads">Number of threads to evaluate the given method in.</param>
+    /// <param name="numberOfGets">Number of times to evaluate the given method.</param>
+    [TestCaseSource(nameof(Concurrent_ThrowExceptionCases))]
+    public static void ConcurrentTest_ThrowExceptionCases_ThrowExceptionEvaluatedOnce<T>(
+        Func<T> testMethod, Type expectedException, int numberOfThreads, int numberOfGets)
+        => ConcurrentTest_Base(
+            testMethod,
+            testObject => ThrowExceptionTestAction(testObject, expectedException, numberOfGets),
+            numberOfThreads);
+
+    /// <summary>
+    /// Tests the thread safe lazy evaluation with null return.
+    /// </summary>
+    /// <typeparam name="T">Type of the returned value.</typeparam>
+    /// <param name="testMethod">Method to evaluate lazily.</param>
+    /// <param name="numberOfThreads">Number of threads to evaluate the given method in.</param>
+    /// <param name="numberOfGets">Number of times to evaluate the given method.</param>
+    [TestCaseSource(nameof(Concurrent_NullReturnCases))]
+    public static void ConcurrentTest_NullReturnCases_ThrowExceptionEvaluatedOnce<T>(
+        Func<T> testMethod, int numberOfThreads, int numberOfGets)
+        => ConcurrentTest_Base(
+            testMethod,
+            testObject => ThrowExceptionTestAction(testObject, typeof(ArgumentNullException), numberOfGets),
+            numberOfThreads);
 
     private static IEnumerable<TestCaseData> OneThread_RegularCases()
     {
@@ -113,57 +208,6 @@ public static class LazyTests
         }
     }
 
-    [TestCaseSource(nameof(OneThread_RegularCases))]
-    public static void OneThreadTest_RegularCases_GetExpectedValueEvaluatedOnce<T>(
-        Func<T> testMethod, T expectedValue, int numberOfGets)
-        => OneThreadTest_Base(
-            testMethod,
-            testObject => RegularTestAction(testObject, expectedValue, numberOfGets)
-        );
-
-    [TestCaseSource(nameof(OneThread_ThrowExceptionCases))]
-    public static void OneThreadTest_ThrowExceptionCases_ThrowExceptionEvaluatedOnce<T>(
-        Func<T> testMethod, Type expectedException, int numberOfGets)
-        => OneThreadTest_Base(
-            testMethod,
-            testObject => ThrowExceptionTestAction(testObject, expectedException, numberOfGets)
-        );
-
-    [TestCaseSource(nameof(OneThread_NullReturnCases))]
-    public static void OneThreadTest_NullReturnCases_ThrowExceptionEvaluatedOnce<T>(
-        Func<T> testMethod, int numberOfGets)
-        => OneThreadTest_Base(
-            testMethod,
-            testObject => ThrowExceptionTestAction(testObject, typeof(ArgumentNullException), numberOfGets)
-        );
-
-    [TestCaseSource(nameof(Concurrent_RegularCases))]
-    public static void ConcurrentTest_RegularCases_GetExpectedValueEvaluatedOnce<T>(
-        Func<T> testMethod, T expectedValue, int numberOfThreads, int numberOfGets)
-        => ConcurrentTest_Base(
-            testMethod,
-            testObject => RegularTestAction(testObject, expectedValue, numberOfGets),
-            numberOfThreads
-        );
-
-    [TestCaseSource(nameof(Concurrent_ThrowExceptionCases))]
-    public static void ConcurrentTest_ThrowExceptionCases_ThrowExceptionEvaluatedOnce<T>(
-        Func<T> testMethod, Type expectedException, int numberOfThreads, int numberOfGets)
-        => ConcurrentTest_Base(
-            testMethod,
-            testObject => ThrowExceptionTestAction(testObject, expectedException, numberOfGets),
-            numberOfThreads
-        );
-
-    [TestCaseSource(nameof(Concurrent_NullReturnCases))]
-    public static void ConcurrentTest_NullReturnCases_ThrowExceptionEvaluatedOnce<T>(
-        Func<T> testMethod, int numberOfThreads, int numberOfGets)
-        => ConcurrentTest_Base(
-            testMethod,
-            testObject => ThrowExceptionTestAction(testObject, typeof(ArgumentNullException), numberOfGets),
-            numberOfThreads
-        );
-
     private static void OneThreadTest_Base<T>(
         Func<T> testMethod,
         Action<ILazy<T>> testAction)
@@ -241,10 +285,10 @@ public static class LazyTests
             {
                 result[i] = (float)i * i / 2;
             }
-            
+
             return result;
         });
-    
+
     private static (int, float) ThrowExceptionTestMethod1()
         => BaseTestMethod<(int, float)>(() => throw new InvalidOperationException());
 

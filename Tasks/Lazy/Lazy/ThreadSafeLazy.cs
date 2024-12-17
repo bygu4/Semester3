@@ -1,4 +1,4 @@
-// Copyright (c) 2024
+// Copyright (c) Alexander Bugaev 2024
 //
 // Use of this source code is governed by an MIT license
 // that can be found in the LICENSE file or at
@@ -18,12 +18,11 @@ namespace Lazy;
 public class ThreadSafeLazy<T>(Func<T> supplier)
     : ILazy<T>
 {
-    private readonly Func<T> supplier = supplier;
     private readonly object lockObject = new ();
 
+    private volatile Func<T>? supplier = supplier;
     private T? result;
     private Exception? thrownException;
-    private volatile bool isEvaluated = false;
 
     /// <summary>
     /// Gets output of the function, evaluated lazily.
@@ -31,11 +30,7 @@ public class ThreadSafeLazy<T>(Func<T> supplier)
     /// <returns>Output of the function.</returns>
     public T Get()
     {
-        if (!this.isEvaluated)
-        {
-            this.EvaluateAndSaveResult();
-        }
-
+        this.EvaluateAndSaveResult();
         if (this.thrownException is not null)
         {
             throw this.thrownException;
@@ -49,7 +44,7 @@ public class ThreadSafeLazy<T>(Func<T> supplier)
     {
         lock (this.lockObject)
         {
-            if (this.isEvaluated)
+            if (this.supplier is null)
             {
                 return;
             }
@@ -64,7 +59,7 @@ public class ThreadSafeLazy<T>(Func<T> supplier)
             }
             finally
             {
-                this.isEvaluated = true;
+                this.supplier = null;
             }
         }
     }
