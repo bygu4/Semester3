@@ -244,8 +244,8 @@ public static class MyThreadPoolTests
     {
         var numberOfThreads = 5;
         var threadPool = new MyThreadPool(numberOfThreads);
-        var rootTask = threadPool.Submit<int[]>(() => [55, 8, 1, 0, 20]);
-        var nextTask = rootTask.ContinueWith(arr =>
+        var baseTask = threadPool.Submit<int[]>(() => [55, 8, 1, 0, 20]);
+        var nextTask = baseTask.ContinueWith(arr =>
         {
             Array.Sort(arr);
             return arr;
@@ -270,7 +270,7 @@ public static class MyThreadPoolTests
     {
         var numberOfThreads = 10;
         var threadPool = new MyThreadPool(numberOfThreads);
-        var task = threadPool.Submit(() =>
+        var baseTask = threadPool.Submit(() =>
         {
             Thread.Sleep(10000);
             return 1;
@@ -278,7 +278,7 @@ public static class MyThreadPoolTests
         var continuations = new IMyTask<bool>[numberOfThreads];
         for (int i = 0; i < numberOfThreads; ++i)
         {
-            continuations[i] = task.ContinueWith(x => x > 0);
+            continuations[i] = baseTask.ContinueWith(x => x > 0);
         }
 
         for (int i = 0; i < numberOfThreads; ++i)
@@ -339,8 +339,78 @@ public static class MyThreadPoolTests
             return 42;
         });
         threadPool.Shutdown();
-        var task = baseTask.ContinueWith((x) => x * x);
+        var task = baseTask.ContinueWith(x => x * x);
         AssertThatTaskWasCanceled(task);
+    }
+
+    /// <summary>
+    /// Tests the concurrent task submission.
+    /// </summary>
+    [Test]
+    public static void Test_SubmitFromDifferentThreads()
+    {
+        var numberOfThreads = 6;
+        var threadPool = new MyThreadPool(numberOfThreads);
+        for (int i = 0; i < numberOfThreads; ++i)
+        {
+            var localI = i;
+            var thread = new Thread(() =>
+            {
+                var task = threadPool.Submit(() =>
+                {
+                    Thread.Sleep(100);
+                    return localI;
+                });
+                AssertThatTaskIsCompleted_BlockThread(task, localI);
+            });
+            thread.Start();
+        }
+    }
+
+    /// <summary>
+    /// Tests the concurrent task continuation.
+    /// </summary>
+    [Test]
+    public static void Test_ContinueTaskInDifferentThreads()
+    {
+        var numberOfThreads = 4;
+        var threadPool = new MyThreadPool(numberOfThreads);
+        var baseTask = threadPool.Submit(() => "oollqqqqw");
+        for (int i = 0; i < numberOfThreads; ++i)
+        {
+            var thread = new Thread(() =>
+            {
+                var continuation = baseTask.ContinueWith(s =>
+                {
+                    Thread.Sleep(100);
+                    return s.Count(c => c == 'q');
+                });
+                AssertThatTaskIsCompleted_BlockThread(continuation, 4);
+            });
+            thread.Start();
+        }
+    }
+
+    /// <summary>
+    /// Tests the concurrent thread pool shutdown.
+    /// </summary>
+    [Test]
+    public static void Test_ShutdownFromOtherThread()
+    {
+        var numberOfThreads = 4;
+        var threadPool = new MyThreadPool(numberOfThreads);
+        var taskThread = new Thread(() =>
+        {
+            var task = threadPool.Submit(() =>
+            {
+                Thread.Sleep(10000);
+                return 42;
+            });
+            AssertThatTaskWasCanceled(task);
+        });
+        var shutdownThread = new Thread(threadPool.Shutdown);
+        taskThread.Start();
+        shutdownThread.Start();
     }
 
     private static void AssertThatTaskIsCompleted_BlockThread<T>(
