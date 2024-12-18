@@ -31,7 +31,7 @@ public static class MyThreadPoolTests
     /// Tests the number of active threads in the pool.
     /// </summary>
     [Test]
-    public static void Test_CheckNumberOfActiveThreads()
+    public static void Test_CheckNumberOfActiveThreads_TasksAreCompleted()
     {
         var numberOfThreads = Environment.ProcessorCount;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -56,7 +56,7 @@ public static class MyThreadPoolTests
     /// Tests the thread pool with fewer given tasks than active threads.
     /// </summary>
     [Test]
-    public static void Test_FewerTasksThanThreads()
+    public static void Test_FewerTasksThanThreads_TasksAreCompleted()
     {
         var numberOfThreads = 16;
         var numberOfTasks = 5;
@@ -75,10 +75,10 @@ public static class MyThreadPoolTests
     }
 
     /// <summary>
-    /// Tests the thread pool with more given tasks then active threads.
+    /// Tests the thread pool with more given tasks than active threads.
     /// </summary>
     [Test]
-    public static void Test_MoreTasksThanThreads()
+    public static void Test_MoreTasksThanThreads_TasksAreCompleted()
     {
         var numberOfThreads = 4;
         var numberOfTasks = 32;
@@ -100,7 +100,7 @@ public static class MyThreadPoolTests
     /// Tests the thread pool with given tasks of different return types.
     /// </summary>
     [Test]
-    public static void Test_TasksOfDifferentType()
+    public static void Test_TasksOfDifferentType_TasksAreCompleted()
     {
         var numberOfThreads = 8;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -118,7 +118,7 @@ public static class MyThreadPoolTests
     /// Tests the thread pool with a task that throws an exception.
     /// </summary>
     [Test]
-    public static void Test_TaskThrowsException()
+    public static void Test_TaskThrowsException_ThrowException()
     {
         var numberOfThreads = 6;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -130,7 +130,7 @@ public static class MyThreadPoolTests
     /// Tests the single task continuation.
     /// </summary>
     [Test]
-    public static void Test_SingleContinueWith()
+    public static void Test_SingleContinueWith_TasksAreCompleted()
     {
         var numberOfThreads = 1;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -144,7 +144,7 @@ public static class MyThreadPoolTests
     /// Tests the task continuation after a delay.
     /// </summary>
     [Test]
-    public static void Test_ContinueTaskWithDelay()
+    public static void Test_ContinueTaskWithDelay_TasksAreCompleted()
     {
         var numberOfThreads = 2;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -158,7 +158,7 @@ public static class MyThreadPoolTests
     /// Tests the continuation of a task that throws an exception.
     /// </summary>
     [Test]
-    public static void Test_ContinueTaskWithException()
+    public static void Test_ContinueTaskWithException_ThrowException()
     {
         var numberOfThreads = 3;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -171,7 +171,7 @@ public static class MyThreadPoolTests
     /// Tests the continuation of different tasks.
     /// </summary>
     [Test]
-    public static void Test_MultipleContinueWith()
+    public static void Test_MultipleContinueWith_TasksAreCompleted()
     {
         var numberOfThreads = 7;
         var numberOfTasks = 7;
@@ -196,7 +196,7 @@ public static class MyThreadPoolTests
     /// Tests the multiple continuation of the same task.
     /// </summary>
     [Test]
-    public static void Test_ContinueFromTheSameTask()
+    public static void Test_ContinueFromTheSameTask_TasksAreCompleted()
     {
         var numberOfThreads = 2;
         var numberOfTasks = 6;
@@ -220,7 +220,7 @@ public static class MyThreadPoolTests
     /// Tests the consecutive continuation of a task.
     /// </summary>
     [Test]
-    public static void Test_ConsecutiveContinueWith()
+    public static void Test_ConsecutiveContinueWith_TasksAreCompleted()
     {
         var numberOfThreads = 12;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -240,7 +240,7 @@ public static class MyThreadPoolTests
     /// Tests the continuation from a continued task.
     /// </summary>
     [Test]
-    public static void Test_NestedContinuation()
+    public static void Test_NestedContinuation_TasksAreCompleted()
     {
         var numberOfThreads = 5;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -266,7 +266,7 @@ public static class MyThreadPoolTests
     /// Tests the order of the continued task completion.
     /// </summary>
     [Test]
-    public static void Test_ContinueFromLongToRunTask()
+    public static void Test_ContinueFromLongToRunTask_ContinuationsAreCompletedLast()
     {
         var numberOfThreads = 10;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -299,7 +299,7 @@ public static class MyThreadPoolTests
     /// Tests the task result obtaining after shutdown.
     /// </summary>
     [Test]
-    public static void Test_TaskWasCanceled_ThrowException()
+    public static void Test_ShutdownDuringTaskCompletion_TaskIsCanceled()
     {
         var numberOfThreads = 1;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -316,7 +316,7 @@ public static class MyThreadPoolTests
     /// Tests the task submission after shutdown.
     /// </summary>
     [Test]
-    public static void Test_TaskWasAddedAfterShutdown_ThrowException()
+    public static void Test_TaskAddedAfterShutdown_TaskIsCanceled()
     {
         var numberOfThreads = 10;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -326,10 +326,23 @@ public static class MyThreadPoolTests
     }
 
     /// <summary>
+    /// Tests the task submission with continuation after shutdown.
+    /// </summary>
+    [Test]
+    public static void Test_AddTaskWithContinuationAfterShutdown_TasksAreCanceled()
+    {
+        var numberOfThreads = 3;
+        var threadPool = new MyThreadPool(numberOfThreads);
+        threadPool.Shutdown();
+        var task = threadPool.Submit(() => "abc").ContinueWith(s => s.IndexOf('b'));
+        AssertThatTaskWasCanceled(task);
+    }
+
+    /// <summary>
     /// Tests the task continuation after shutdown.
     /// </summary>
     [Test]
-    public static void Test_ContinueFromCanceledTask_ThrowException()
+    public static void Test_ContinueFromCanceledTask_TasksAreCanceled()
     {
         var numberOfThreads = 2;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -347,7 +360,7 @@ public static class MyThreadPoolTests
     /// Tests the concurrent task submission.
     /// </summary>
     [Test]
-    public static void Test_SubmitFromDifferentThreads()
+    public static void Test_SubmitFromDifferentThreads_TasksAreCompleted()
     {
         var numberOfThreads = 6;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -371,7 +384,7 @@ public static class MyThreadPoolTests
     /// Tests the concurrent task continuation.
     /// </summary>
     [Test]
-    public static void Test_ContinueTaskInDifferentThreads()
+    public static void Test_ContinueTaskInDifferentThreads_TasksAreCompleted()
     {
         var numberOfThreads = 4;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -395,7 +408,7 @@ public static class MyThreadPoolTests
     /// Tests the concurrent thread pool shutdown.
     /// </summary>
     [Test]
-    public static void Test_ShutdownFromOtherThread()
+    public static void Test_ShutdownFromOtherThread_TaskIsCanceled()
     {
         var numberOfThreads = 4;
         var threadPool = new MyThreadPool(numberOfThreads);
