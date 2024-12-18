@@ -12,7 +12,7 @@ namespace MyThreadPool;
 public class MyThreadPool
 {
     private readonly Thread[] threads;
-    private readonly Queue<Action> remainingTasks = new ();
+    private readonly PipelineQueue<Action> remainingTasks = new ();
     private readonly CancellationTokenSource cancellation = new ();
 
     /// <summary>

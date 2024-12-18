@@ -14,7 +14,7 @@ namespace MyThreadPool;
 internal class MyTask<TResult> : IMyTask<TResult>
 {
     private readonly Func<TResult> methodToEvaluate;
-    private readonly Queue<Action> taskQueue;
+    private readonly PipelineQueue<Action> tasksToContinueWith;
     private readonly CancellationToken cancellationToken;
     private readonly object lockObject = new ();
 
@@ -31,17 +31,13 @@ internal class MyTask<TResult> : IMyTask<TResult>
     /// <param name="cancellationToken">Token containing task cancellation data.</param>
     public MyTask(
         Func<TResult> methodToEvaluate,
-        Queue<Action> taskQueue,
+        PipelineQueue<Action> taskQueue,
         CancellationToken cancellationToken)
     {
         this.methodToEvaluate = methodToEvaluate;
-        this.taskQueue = taskQueue;
+        this.tasksToContinueWith = new PipelineQueue<Action>(taskQueue, () => this.IsCompleted);
         this.cancellationToken = cancellationToken;
-        lock (this.taskQueue)
-        {
-            this.taskQueue.Enqueue(this.Complete);
-            Monitor.Pulse(this.taskQueue);
-        }
+        taskQueue.Enqueue(this.Complete);
     }
 
     /// <summary>
@@ -65,7 +61,7 @@ internal class MyTask<TResult> : IMyTask<TResult>
     /// <returns>IMyTask instance representing the new task.</returns>
     public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult, TNewResult> newTask)
         => new MyTask<TNewResult>(
-            () => newTask(this.Result), this.taskQueue, this.cancellationToken);
+            () => newTask(this.Result), this.tasksToContinueWith, this.cancellationToken);
 
     private void Complete()
     {
@@ -80,14 +76,15 @@ internal class MyTask<TResult> : IMyTask<TResult>
             try
             {
                 this.result = this.methodToEvaluate();
-                this.IsCompleted = true;
             }
             catch (Exception e)
             {
                 this.thrownException = e;
             }
 
+            this.IsCompleted = true;
             Monitor.PulseAll(this.lockObject);
+            this.tasksToContinueWith.PassToNext();
         }
     }
 
@@ -95,7 +92,7 @@ internal class MyTask<TResult> : IMyTask<TResult>
     {
         lock (this.lockObject)
         {
-            while (!this.IsCompleted && this.thrownException == null)
+            while (!this.IsCompleted)
             {
                 if (this.cancellationToken.IsCancellationRequested)
                 {

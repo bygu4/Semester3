@@ -141,7 +141,21 @@ public static class MyThreadPoolTests
     }
 
     /// <summary>
-    /// Tests the task continuation that throws an exception.
+    /// Tests the task continuation after a delay.
+    /// </summary>
+    [Test]
+    public static void Test_ContinueTaskWithDelay()
+    {
+        var numberOfThreads = 2;
+        var threadPool = new MyThreadPool(numberOfThreads);
+        var task = threadPool.Submit(() => "pupupupu");
+        Thread.Sleep(100);
+        var continuation = task.ContinueWith(s => s.Length);
+        AssertThatTaskIsCompleted_BlockThread(continuation, 8);
+    }
+
+    /// <summary>
+    /// Tests the continuation of a task that throws an exception.
     /// </summary>
     [Test]
     public static void Test_ContinueTaskWithException()
@@ -193,7 +207,7 @@ public static class MyThreadPoolTests
         for (int i = 0; i < numberOfTasks; ++i)
         {
             var localI = i;
-            tasks[i] = baseTask.ContinueWith((s) => s[localI]);
+            tasks[i] = baseTask.ContinueWith(s => s[localI]);
         }
 
         for (int i = 0; i < numberOfTasks; ++i)
@@ -220,6 +234,65 @@ public static class MyThreadPoolTests
             x => x * x).ContinueWith(
             x => x.ToString());
         AssertThatTaskIsCompleted_BlockThread(task, "7744");
+    }
+
+    /// <summary>
+    /// Tests the continuation from a continued task.
+    /// </summary>
+    [Test]
+    public static void Test_NestedContinuation()
+    {
+        var numberOfThreads = 5;
+        var threadPool = new MyThreadPool(numberOfThreads);
+        var rootTask = threadPool.Submit<int[]>(() => [55, 8, 1, 0, 20]);
+        var nextTask = rootTask.ContinueWith(arr =>
+        {
+            Array.Sort(arr);
+            return arr;
+        });
+        var continuations = new IMyTask<int>[numberOfThreads];
+        for (int i = 0; i < numberOfThreads; ++i)
+        {
+            continuations[i] = nextTask.ContinueWith(arr => arr.Last());
+        }
+
+        foreach (var continuation in continuations)
+        {
+            AssertThatTaskIsCompleted_BlockThread(continuation, 55);
+        }
+    }
+
+    /// <summary>
+    /// Tests the order of the continued task completion.
+    /// </summary>
+    [Test]
+    public static void Test_ContinueFromLongToRunTask()
+    {
+        var numberOfThreads = 10;
+        var threadPool = new MyThreadPool(numberOfThreads);
+        var task = threadPool.Submit(() =>
+        {
+            Thread.Sleep(10000);
+            return 1;
+        });
+        var continuations = new IMyTask<bool>[numberOfThreads];
+        for (int i = 0; i < numberOfThreads; ++i)
+        {
+            continuations[i] = task.ContinueWith(x => x > 0);
+        }
+
+        for (int i = 0; i < numberOfThreads; ++i)
+        {
+            var newTask = threadPool.Submit(() => 99f);
+            Thread.Sleep(50);
+            AssertThatTaskIsCompleted_NonBlock(newTask, 99f);
+        }
+
+        Thread.Sleep(10000);
+        foreach (var continuation in continuations)
+        {
+            AssertThatTaskIsCompleted_NonBlock(continuation, true);
+        }
     }
 
     /// <summary>
@@ -290,7 +363,7 @@ public static class MyThreadPoolTests
         var exception = Assert.Throws<AggregateException>(() => { _ = task.Result; });
         Assert.That(exception?.InnerException, Is.Not.Null);
         Assert.That(exception?.InnerException?.GetType(), Is.EqualTo(exceptionType));
-        Assert.That(task.IsCompleted, Is.False);
+        Assert.That(task.IsCompleted, Is.True);
     }
 
     private static void AssertThatTaskWasCanceled<T>(IMyTask<T> task)
