@@ -16,7 +16,7 @@ internal class MyTask<TResult> : IMyTask<TResult>
     private readonly Func<TResult> methodToEvaluate;
     private readonly PipelineQueue<Action> tasksToContinueWith;
     private readonly CancellationToken cancellationToken;
-    private readonly object lockObject = new ();
+    private readonly ManualResetEvent wasEvaluated = new (false);
 
     private TResult? result;
     private Exception? thrownException;
@@ -65,50 +65,44 @@ internal class MyTask<TResult> : IMyTask<TResult>
 
     private void Complete()
     {
-        lock (this.lockObject)
+        if (this.cancellationToken.IsCancellationRequested)
         {
-            if (this.cancellationToken.IsCancellationRequested)
-            {
-                Monitor.PulseAll(this.lockObject);
-                return;
-            }
-
-            try
-            {
-                this.result = this.methodToEvaluate();
-            }
-            catch (Exception e)
-            {
-                this.thrownException = e;
-            }
-
-            this.IsCompleted = true;
-            Monitor.PulseAll(this.lockObject);
-            this.tasksToContinueWith.PassToNext();
+            this.wasEvaluated.Set();
+            return;
         }
+
+        try
+        {
+            this.result = this.methodToEvaluate();
+        }
+        catch (Exception e)
+        {
+            this.thrownException = e;
+        }
+
+        this.IsCompleted = true;
+        this.wasEvaluated.Set();
+        this.tasksToContinueWith.PassToNext();
     }
 
     private TResult GetResult()
     {
-        lock (this.lockObject)
+        while (!this.IsCompleted)
         {
-            while (!this.IsCompleted)
+            if (this.cancellationToken.IsCancellationRequested)
             {
-                if (this.cancellationToken.IsCancellationRequested)
-                {
-                    throw new TaskCanceledException();
-                }
-
-                Monitor.Wait(this.lockObject);
+                throw new TaskCanceledException();
             }
 
-            if (this.thrownException != null)
-            {
-                throw new AggregateException(this.thrownException);
-            }
-
-            ArgumentNullException.ThrowIfNull(this.result);
-            return this.result;
+            this.wasEvaluated.WaitOne();
         }
+
+        if (this.thrownException != null)
+        {
+            throw new AggregateException(this.thrownException);
+        }
+
+        ArgumentNullException.ThrowIfNull(this.result);
+        return this.result;
     }
 }
