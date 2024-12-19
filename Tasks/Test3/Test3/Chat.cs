@@ -11,6 +11,13 @@ public class Chat(int port, string? address)
     private Task? writer;
     private CancellationTokenSource cancellation = new ();
 
+    public async Task EstablishConnection()
+    {
+        await this.Start();
+        await this.WaitForChatToClose();
+        this.listener?.Stop();
+    }
+
     public async Task Start()
     {
         this.cancellation = new CancellationTokenSource();
@@ -26,14 +33,24 @@ public class Chat(int port, string? address)
         }
 
         var stream = client.GetStream();
-        this.reader = Reader.StartReadingFromStream(stream, this.cancellation.Token);
-        this.writer = Writer.StartWritingFromConsole(stream, this.cancellation.Token);
+        this.reader = Reader.StartReadingFromStream(
+            stream,
+            this.cancellation.Token,
+            async () => await this.Stop());
+        this.writer = Writer.StartWritingFromConsole(
+            stream,
+            this.cancellation.Token);
     }
 
     public async Task Stop()
     {
         this.cancellation.Cancel();
         this.listener?.Stop();
+        await this.WaitForChatToClose();
+    }
+
+    private async Task WaitForChatToClose()
+    {
         if (this.reader is not null)
         {
             await this.reader;
