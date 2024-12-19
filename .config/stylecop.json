@@ -7,8 +7,12 @@
         },
 
         "documentationRules": {
-            "copyrightText": "Copyright (c) 2024\n\nUse of this source code is governed by an MIT license\nthat can be found in the LICENSE file or at\nhttps://opensource.org/licenses/MIT.",
-            "xmlHeader": false
+            "copyrightText": "Copyright (c) {author} {year}\n\nUse of this source code is governed by an MIT license\nthat can be found in the LICENSE file or at\nhttps://opensource.org/licenses/MIT.",
+            "xmlHeader": false,
+            "variables": {
+                "author": "Alexander Bugaev",
+                "year": "2024"
+            }
         }
     }
 }

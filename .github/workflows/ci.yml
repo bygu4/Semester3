@@ -1,5 +1,5 @@
 name: Build-And-Test
-on: [push]
+on: [push, pull_request]
 jobs:
   build-Windows:
     runs-on: windows-latest
@@ -7,7 +7,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '9.x'
       - name: Build and run tests
         run: ./scripts/windowsBuild.bat
   build-Ubuntu:
@@ -16,6 +16,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'
+          dotnet-version: '9.x'
       - name: Build and run tests
         run: bash scripts/linuxBuild.bash
