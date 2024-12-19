@@ -1,9 +1,19 @@
-﻿
+﻿// Copyright (c) Alexander Bugaev 2024
+//
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file or at
+// https://opensource.org/licenses/MIT.
+
 namespace Chat;
 
 using System.Net;
 using System.Net.Sockets;
 
+/// <summary>
+/// Class representing a chat.
+/// </summary>
+/// <param name="port">Port to establish connection on.</param>
+/// <param name="address">Address to start a server on.</param>
 public class Chat(int port, string? address)
 {
     private TcpListener? listener;
@@ -11,6 +21,10 @@ public class Chat(int port, string? address)
     private Task? writer;
     private CancellationTokenSource cancellation = new ();
 
+    /// <summary>
+    /// Establish connection until it is closed from console.
+    /// </summary>
+    /// <returns>A task representing the connection.</returns>
     public async Task EstablishConnection()
     {
         await this.Start();
@@ -18,6 +32,10 @@ public class Chat(int port, string? address)
         this.listener?.Stop();
     }
 
+    /// <summary>
+    /// Start the server if possible and start or accept the client.
+    /// </summary>
+    /// <returns>The task representing the established connection.</returns>
     public async Task Start()
     {
         this.cancellation = new CancellationTokenSource();
@@ -42,6 +60,10 @@ public class Chat(int port, string? address)
             this.cancellation.Token);
     }
 
+    /// <summary>
+    /// Stop all the connections.
+    /// </summary>
+    /// <returns>The task representing the stop of the chat.</returns>
     public async Task Stop()
     {
         this.cancellation.Cancel();
@@ -55,7 +77,7 @@ public class Chat(int port, string? address)
         {
             await this.reader;
         }
-        
+
         if (this.writer is not null)
         {
             await this.writer;
