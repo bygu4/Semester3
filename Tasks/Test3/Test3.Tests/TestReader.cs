@@ -20,14 +20,11 @@ public class TestReader(IList<string> linesToRead)
         CancellationToken token,
         Action stopAction)
     {
-        using (stream)
+        var reader = new StreamReader(stream);
+        foreach (var expectedLine in linesToRead)
         {
-            var reader = new StreamReader(stream);
-            foreach (var expectedLine in linesToRead)
-            {
-                var actualLine = await reader.ReadLineAsync();
-                Assert.That(actualLine, Is.EqualTo(expectedLine));
-            }
+            var actualLine = await reader.ReadLineAsync();
+            Assert.That(actualLine, Is.EqualTo(expectedLine));
         }
     }
 }

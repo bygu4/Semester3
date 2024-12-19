@@ -20,14 +20,11 @@ public class TestWriter(IList<string> linesToWrite)
         CancellationToken token,
         Action stopAction)
     {
-        using (stream)
+        var writer = new StreamWriter(stream);
+        foreach (var line in linesToWrite)
         {
-            var writer = new StreamWriter(stream);
-            foreach (var line in linesToWrite)
-            {
-                await writer.WriteLineAsync(line);
-                await writer.FlushAsync();
-            }
+            await writer.WriteLineAsync(line);
+            await writer.FlushAsync();
         }
     }
 }

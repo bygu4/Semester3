@@ -14,9 +14,10 @@ using System.Net.Sockets;
 /// </summary>
 /// <param name="port">Port to establish connection on.</param>
 /// <param name="address">Address to start a server on.</param>
-public class Chat(int port, string? address = null)
+public class Chat(int port, string? address = null) : IDisposable
 {
     private TcpListener? listener;
+    private TcpClient? client;
     private Task? reader;
     private Task? writer;
     private CancellationTokenSource cancellation = new ();
@@ -31,7 +32,7 @@ public class Chat(int port, string? address = null)
     {
         await this.Start(reader, writer);
         await this.WaitForChatToClose();
-        this.listener?.Stop();
+        await this.Stop();
     }
 
     /// <summary>
@@ -43,19 +44,18 @@ public class Chat(int port, string? address = null)
     public async Task Start(IReader reader, IWriter writer)
     {
         this.cancellation = new CancellationTokenSource();
-        TcpClient client;
         if (address is null)
         {
             this.listener = new TcpListener(IPAddress.Any, port);
             this.listener.Start();
-            client = await this.listener.AcceptTcpClientAsync();
+            this.client = await this.listener.AcceptTcpClientAsync();
         }
         else
         {
-            client = new TcpClient(address, port);
+            this.client = new TcpClient(address, port);
         }
 
-        var stream = client.GetStream();
+        var stream = this.client.GetStream();
         this.reader = reader.StartReadingFromStream(
             stream,
             this.cancellation.Token,
@@ -73,9 +73,15 @@ public class Chat(int port, string? address = null)
     public async Task Stop()
     {
         this.cancellation.Cancel();
-        this.listener?.Stop();
+        this.listener?.Dispose();
+        this.client?.Dispose();
         await this.WaitForChatToClose();
     }
+
+    /// <summary>
+    /// Releases all resources used by the chat.
+    /// </summary>
+    public void Dispose() => this.Stop().Wait();
 
     private async Task WaitForChatToClose()
     {

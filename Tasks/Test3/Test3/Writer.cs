@@ -25,18 +25,15 @@ public class Writer : IWriter
         CancellationToken token,
         Action stopAction)
     {
-        using (stream)
+        while (!token.IsCancellationRequested)
         {
-            while (!token.IsCancellationRequested)
+            var line = Console.ReadLine();
+            var writer = new StreamWriter(stream);
+            await writer.WriteLineAsync(line);
+            await writer.FlushAsync();
+            if (line == "exit")
             {
-                var line = Console.ReadLine();
-                var writer = new StreamWriter(stream);
-                await writer.WriteLineAsync(line);
-                await writer.FlushAsync();
-                if (line == "exit")
-                {
-                    stopAction();
-                }
+                stopAction();
             }
         }
     }
