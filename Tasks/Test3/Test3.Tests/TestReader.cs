@@ -28,8 +28,6 @@ public class TestReader(IList<string> linesToRead)
                 var actualLine = await reader.ReadLineAsync();
                 Assert.That(actualLine, Is.EqualTo(expectedLine));
             }
-
-            stopAction();
         }
     }
 }

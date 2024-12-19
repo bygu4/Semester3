@@ -38,9 +38,9 @@ public class ChatTests
     {
         var firstTask = this.firstChat.EstablishConnection(
             new TestReader(linesToReadAndWrite),
-            new Writer());
+            new TestWriter([]));
         var secondTask = this.secondChat.EstablishConnection(
-            new Reader(),
+            new TestReader([]),
             new TestWriter(linesToReadAndWrite));
         await firstTask;
         await secondTask;

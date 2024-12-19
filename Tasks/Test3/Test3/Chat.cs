@@ -59,11 +59,11 @@ public class Chat(int port, string? address = null)
         this.reader = reader.StartReadingFromStream(
             stream,
             this.cancellation.Token,
-            () => this.cancellation.Cancel());
+            async () => await this.Stop());
         this.writer = writer.StartWritingToStream(
             stream,
             this.cancellation.Token,
-            () => this.cancellation.Cancel());
+            async () => await this.Stop());
     }
 
     /// <summary>
