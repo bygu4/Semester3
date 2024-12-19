@@ -30,7 +30,7 @@ public class Reader : IReader
             while (!token.IsCancellationRequested)
             {
                 var reader = new StreamReader(stream);
-                var line = await reader.ReadLineAsync();
+                var line = await reader.ReadLineAsync(token);
                 Console.WriteLine(line);
                 if (line == "exit")
                 {

@@ -8,6 +8,10 @@ namespace Chat.Tests;
 
 using System.Net.Sockets;
 
+/// <summary>
+/// Chat writer for the test.
+/// </summary>
+/// <param name="linesToWrite">Lines to write.</param>
 public class TestWriter(IList<string> linesToWrite)
     : IWriter
 {
@@ -18,16 +22,11 @@ public class TestWriter(IList<string> linesToWrite)
     {
         using (stream)
         {
-            while (!token.IsCancellationRequested)
+            var writer = new StreamWriter(stream);
+            foreach (var line in linesToWrite)
             {
-                var writer = new StreamWriter(stream);
-                foreach (var line in linesToWrite)
-                {
-                    await writer.WriteLineAsync(line);
-                    await writer.FlushAsync();
-                }
-
-                stopAction();
+                await writer.WriteLineAsync(line);
+                await writer.FlushAsync();
             }
         }
     }

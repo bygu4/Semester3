@@ -17,6 +17,9 @@ public class ChatTests
     private Chat firstChat = new (Port);
     private Chat secondChat = new (Port);
 
+    /// <summary>
+    /// Sets up two chat instances.
+    /// </summary>
     [SetUp]
     public void SetupChat()
     {
@@ -24,6 +27,11 @@ public class ChatTests
         this.secondChat = new Chat(Port, Address);
     }
 
+    /// <summary>
+    /// Tests the chat by writing and reading some messages.
+    /// </summary>
+    /// <param name="linesToReadAndWrite">Lines to write.</param>
+    /// <returns>Task representing the test.</returns>
     [TestCaseSource(nameof(LinesToWriteAndRead))]
     public async Task Test_WriteAndReadMessages_MessagesAreWrittenAndReadCorrectly(
         string[] linesToReadAndWrite)

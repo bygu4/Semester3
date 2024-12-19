@@ -8,6 +8,10 @@ namespace Chat.Tests;
 
 using System.Net.Sockets;
 
+/// <summary>
+/// Chat reader for the test.
+/// </summary>
+/// <param name="linesToRead">Lines expected to be read.</param>
 public class TestReader(IList<string> linesToRead)
     : IReader
 {
@@ -18,17 +22,14 @@ public class TestReader(IList<string> linesToRead)
     {
         using (stream)
         {
-            while (!token.IsCancellationRequested)
+            var reader = new StreamReader(stream);
+            foreach (var expectedLine in linesToRead)
             {
-                var reader = new StreamReader(stream);
-                foreach (var expectedLine in linesToRead)
-                {
-                    var actualLine = await reader.ReadLineAsync();
-                    Assert.That(actualLine, Is.EqualTo(expectedLine));
-                }
-
-                stopAction();
+                var actualLine = await reader.ReadLineAsync();
+                Assert.That(actualLine, Is.EqualTo(expectedLine));
             }
+
+            stopAction();
         }
     }
 }
