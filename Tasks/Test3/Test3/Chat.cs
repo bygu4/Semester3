@@ -60,11 +60,11 @@ public class Chat(int port, string? address = null)
         this.reader = reader.StartReadingFromStream(
             stream,
             this.cancellation.Token,
-            async () => await this.Stop());
+            () => this.cancellation.Cancel());
         this.writer = writer.StartWritingToStream(
             stream,
             this.cancellation.Token,
-            async () => await this.Stop());
+            () => this.cancellation.Cancel());
     }
 
     /// <summary>
