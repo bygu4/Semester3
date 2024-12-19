@@ -11,17 +11,19 @@ using System.Net.Sockets;
 /// <summary>
 /// Class for reading from console and writing to the given stream.
 /// </summary>
-public class Writer
+public class Writer : IWriter
 {
     /// <summary>
     /// Start reading from the console and writing to the stream.
     /// </summary>
     /// <param name="stream">Stream to write to.</param>
     /// <param name="token">The cancellation token.</param>
+    /// <param name="stopAction">The action to stop the chat if "exit" is written.</param>
     /// <returns>The task representing the work of the writer.</returns>
-    public async Task StartWritingFromConsole(
+    public async Task StartWritingToStream(
         NetworkStream stream,
-        CancellationToken token)
+        CancellationToken token,
+        Action stopAction)
     {
         using (stream)
         {
@@ -31,6 +33,10 @@ public class Writer
                 var writer = new StreamWriter(stream);
                 await writer.WriteLineAsync(line);
                 await writer.FlushAsync();
+                if (line == "exit")
+                {
+                    stopAction();
+                }
             }
         }
     }

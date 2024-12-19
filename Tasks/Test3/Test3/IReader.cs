@@ -9,34 +9,19 @@ namespace Chat;
 using System.Net.Sockets;
 
 /// <summary>
-/// Class for reading the given stream and writing to the console.
+/// Interface representing the reader for chat.
 /// </summary>
-public class Reader : IReader
+public interface IReader
 {
     /// <summary>
-    /// Start reading from stream and writing to the console.
+    /// Start reading from the given stream.
     /// </summary>
     /// <param name="stream">Stream to read from.</param>
     /// <param name="token">The cancellation token.</param>
     /// <param name="stopAction">The action to stop the chat if "exit" is read.</param>
     /// <returns>The task representing the work of the reader.</returns>
-    public async Task StartReadingFromStream(
+    public Task StartReadingFromStream(
         NetworkStream stream,
         CancellationToken token,
-        Action stopAction)
-    {
-        using (stream)
-        {
-            while (!token.IsCancellationRequested)
-            {
-                var reader = new StreamReader(stream);
-                var line = await reader.ReadLineAsync();
-                Console.WriteLine(line);
-                if (line == "exit")
-                {
-                    stopAction();
-                }
-            }
-        }
-    }
+        Action stopAction);
 }

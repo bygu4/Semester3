@@ -9,19 +9,25 @@ namespace Chat.Tests;
 using System.Net.Sockets;
 
 public class TestReader(IList<string> linesToRead)
-    : Reader
+    : IReader
 {
-    public new async Task StartReadingFromStream(
+    public async Task StartReadingFromStream(
         NetworkStream stream,
-        CancellationToken token)
+        CancellationToken token,
+        Action stopAction)
     {
         using (stream)
         {
-            var reader = new StreamReader(stream);
-            foreach (var expectedLine in linesToRead)
+            while (!token.IsCancellationRequested)
             {
-                var actualLine = await reader.ReadLineAsync();
-                Assert.That(actualLine, Is.EqualTo(expectedLine));
+                var reader = new StreamReader(stream);
+                foreach (var expectedLine in linesToRead)
+                {
+                    var actualLine = await reader.ReadLineAsync();
+                    Assert.That(actualLine, Is.EqualTo(expectedLine));
+                }
+
+                stopAction();
             }
         }
     }

@@ -9,19 +9,25 @@ namespace Chat.Tests;
 using System.Net.Sockets;
 
 public class TestWriter(IList<string> linesToWrite)
-    : Writer
+    : IWriter
 {
-    public new async Task StartWritingFromConsole(
+    public async Task StartWritingToStream(
         NetworkStream stream,
-        CancellationToken token)
+        CancellationToken token,
+        Action stopAction)
     {
         using (stream)
         {
-            var writer = new StreamWriter(stream);
-            foreach (var line in linesToWrite)
+            while (!token.IsCancellationRequested)
             {
-                await writer.WriteLineAsync(line);
-                await writer.FlushAsync();
+                var writer = new StreamWriter(stream);
+                foreach (var line in linesToWrite)
+                {
+                    await writer.WriteLineAsync(line);
+                    await writer.FlushAsync();
+                }
+
+                stopAction();
             }
         }
     }

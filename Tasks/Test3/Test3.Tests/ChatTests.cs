@@ -24,30 +24,26 @@ public class ChatTests
         this.secondChat = new Chat(Port, Address);
     }
 
-    [TearDown]
-    public async Task StopChat()
-    {
-        await this.firstChat.Stop();
-        await this.secondChat.Stop();
-    }
-
     [TestCaseSource(nameof(LinesToWriteAndRead))]
-    public async Task Test_WriteAndReadMessages_MessagesAreWritterAndReadCorrectly(
+    public async Task Test_WriteAndReadMessages_MessagesAreWrittenAndReadCorrectly(
         string[] linesToReadAndWrite)
     {
-        await this.firstChat.EstablishConnection(
+        var firstTask = this.firstChat.EstablishConnection(
             new TestReader(linesToReadAndWrite),
             new Writer());
-        await this.secondChat.EstablishConnection(
+        var secondTask = this.secondChat.EstablishConnection(
             new Reader(),
             new TestWriter(linesToReadAndWrite));
+        await firstTask;
+        await secondTask;
     }
 
     private static List<string[]> LinesToWriteAndRead() =>
     [
-        ["fasfsa", "asffsa", "", "11", "22", "exit"],
-        ["asfasf", "as", "", "", "exit"],
-        ["exit"],
-        ["qqqqqqqqqqwwwwwwwwwww", "123456789", "exit"],
+        ["fasfsa", "asffsa", "-1", "11", "22"],
+        ["asfasf", "as", "asggsgsagsasgagsa"],
+        ["2345566"],
+        [string.Empty],
+        ["qqqqqqqqqqwwwwwwwwwww", "123456789", "matmex He Dlya Bcex"],
     ];
 }

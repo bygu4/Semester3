@@ -27,7 +27,7 @@ public class Chat(int port, string? address = null)
     /// <param name="reader">Reader instance to use.</param>
     /// <param name="writer">Writer instance to use.</param>
     /// <returns>A task representing the connection.</returns>
-    public async Task EstablishConnection(Reader reader, Writer writer)
+    public async Task EstablishConnection(IReader reader, IWriter writer)
     {
         await this.Start(reader, writer);
         await this.WaitForChatToClose();
@@ -40,7 +40,7 @@ public class Chat(int port, string? address = null)
     /// <param name="reader">Reader instance to use.</param>
     /// <param name="writer">Writer instance to use.</param>
     /// <returns>The task representing the established connection.</returns>
-    public async Task Start(Reader reader, Writer writer)
+    public async Task Start(IReader reader, IWriter writer)
     {
         this.cancellation = new CancellationTokenSource();
         TcpClient client;
@@ -59,10 +59,11 @@ public class Chat(int port, string? address = null)
         this.reader = reader.StartReadingFromStream(
             stream,
             this.cancellation.Token,
-            async () => await this.Stop());
-        this.writer = writer.StartWritingFromConsole(
+            () => this.cancellation.Cancel());
+        this.writer = writer.StartWritingToStream(
             stream,
-            this.cancellation.Token);
+            this.cancellation.Token,
+            () => this.cancellation.Cancel());
     }
 
     /// <summary>
