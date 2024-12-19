@@ -15,13 +15,14 @@ public static class Program
     /// The main entry point of the program.
     /// Starts chat with given port and address.
     /// </summary>
-    /// <param name="args">Port and an address to start server with.</param>
+    /// <param name="args">Port and an address to access with a client.</param>
     /// <returns>The task representing the work of the chat.</returns>
     public static async Task Main(string[] args)
     {
         if (args.Length != 1 && args.Length != 2)
         {
             Console.WriteLine("Bad args");
+            return;
         }
 
         var port = int.Parse(args[0]);
