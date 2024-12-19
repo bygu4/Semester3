@@ -14,7 +14,8 @@ using System.Net.Sockets;
 /// </summary>
 /// <param name="port">Port to establish connection on.</param>
 /// <param name="address">Address to start a server on.</param>
-public class Chat(int port, string? address = null) : IDisposable
+public class Chat(int port, string? address = null)
+    : IDisposable
 {
     private TcpListener? listener;
     private TcpClient? client;

@@ -18,13 +18,23 @@ public class ChatTests
     private Chat secondChat = new (Port);
 
     /// <summary>
-    /// Sets up two chat instances.
+    /// Sets up two chat instances before the test.
     /// </summary>
     [SetUp]
     public void SetupChat()
     {
         this.firstChat = new Chat(Port);
         this.secondChat = new Chat(Port, Address);
+    }
+
+    /// <summary>
+    /// Stops the chat after the test.
+    /// </summary>
+    [TearDown]
+    public void StopChat()
+    {
+        this.firstChat.Dispose();
+        this.secondChat.Dispose();
     }
 
     /// <summary>
