@@ -47,6 +47,7 @@ public class Chat(int port, string? address = null)
         if (address is null)
         {
             this.listener = new TcpListener(IPAddress.Any, port);
+            this.listener.Start();
             client = await this.listener.AcceptTcpClientAsync();
         }
         else
