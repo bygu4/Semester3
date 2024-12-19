@@ -11,7 +11,7 @@ using System.Net.Sockets;
 /// <summary>
 /// Class for reading the given stream and writing to the console.
 /// </summary>
-public static class Reader
+public class Reader
 {
     /// <summary>
     /// Start reading from stream and writing to the console.
@@ -20,7 +20,7 @@ public static class Reader
     /// <param name="token">The cancellation token.</param>
     /// <param name="stopAction">The action to stop the chat if "exit" is read.</param>
     /// <returns>The task representing the work of the reader.</returns>
-    public static async Task StartReadingFromStream(
+    public async Task StartReadingFromStream(
         NetworkStream stream,
         CancellationToken token,
         Action stopAction)

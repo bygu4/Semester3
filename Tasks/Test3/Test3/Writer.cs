@@ -11,7 +11,7 @@ using System.Net.Sockets;
 /// <summary>
 /// Class for reading from console and writing to the given stream.
 /// </summary>
-public static class Writer
+public class Writer
 {
     /// <summary>
     /// Start reading from the console and writing to the stream.
@@ -19,7 +19,7 @@ public static class Writer
     /// <param name="stream">Stream to write to.</param>
     /// <param name="token">The cancellation token.</param>
     /// <returns>The task representing the work of the writer.</returns>
-    public static async Task StartWritingFromConsole(
+    public async Task StartWritingFromConsole(
         NetworkStream stream,
         CancellationToken token)
     {

@@ -14,7 +14,7 @@ using System.Net.Sockets;
 /// </summary>
 /// <param name="port">Port to establish connection on.</param>
 /// <param name="address">Address to start a server on.</param>
-public class Chat(int port, string? address)
+public class Chat(int port, string? address = null)
 {
     private TcpListener? listener;
     private Task? reader;
@@ -24,10 +24,12 @@ public class Chat(int port, string? address)
     /// <summary>
     /// Establish connection until it is closed from console.
     /// </summary>
+    /// <param name="reader">Reader instance to use.</param>
+    /// <param name="writer">Writer instance to use.</param>
     /// <returns>A task representing the connection.</returns>
-    public async Task EstablishConnection()
+    public async Task EstablishConnection(Reader reader, Writer writer)
     {
-        await this.Start();
+        await this.Start(reader, writer);
         await this.WaitForChatToClose();
         this.listener?.Stop();
     }
@@ -35,8 +37,10 @@ public class Chat(int port, string? address)
     /// <summary>
     /// Start the server if possible and start or accept the client.
     /// </summary>
+    /// <param name="reader">Reader instance to use.</param>
+    /// <param name="writer">Writer instance to use.</param>
     /// <returns>The task representing the established connection.</returns>
-    public async Task Start()
+    public async Task Start(Reader reader, Writer writer)
     {
         this.cancellation = new CancellationTokenSource();
         TcpClient client;
@@ -51,11 +55,11 @@ public class Chat(int port, string? address)
         }
 
         var stream = client.GetStream();
-        this.reader = Reader.StartReadingFromStream(
+        this.reader = reader.StartReadingFromStream(
             stream,
             this.cancellation.Token,
             async () => await this.Stop());
-        this.writer = Writer.StartWritingFromConsole(
+        this.writer = writer.StartWritingFromConsole(
             stream,
             this.cancellation.Token);
     }

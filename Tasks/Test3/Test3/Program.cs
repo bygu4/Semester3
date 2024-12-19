@@ -27,6 +27,6 @@ public static class Program
         var port = int.Parse(args[0]);
         var address = args.Length == 2 ? args[1] : null;
         var chat = new Chat(port, address);
-        await chat.EstablishConnection();
+        await chat.EstablishConnection(new Reader(), new Writer());
     }
 }
