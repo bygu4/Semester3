@@ -1,0 +1,17 @@
+public class TestClass1
+{
+    public int testField1
+    private static string testField2
+
+    public int TestMethod1(float attribute1)
+    public static float TestMethod2()
+    private string TestMethod3(string attribute1, int attribute2)
+
+    private class NestedClass
+    {
+        public float testField1;
+        private string testField2;
+
+        public double TestMethod1()
+    }
+}
