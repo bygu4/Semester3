@@ -1,3 +1,9 @@
+// Copyright (c) Alexander Bugaev 2024
+//
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file or at
+// https://opensource.org/licenses/MIT.
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,7 +15,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
