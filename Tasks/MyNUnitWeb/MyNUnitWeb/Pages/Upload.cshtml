@@ -8,26 +8,9 @@
         <br>
         <input id="file-upload" type="file" multiple accept=@UploadModel.AssemblyExtension>
     </p>
-    <button type="submit" onclick="return VerifyUploadSizeIsOK()">Start testing</button>
+    <button type="submit" onclick="return VerifyUploadSize('file-upload', @UploadModel.MaxUploadSizeInBytes)">
+        Start testing
+    </button>
 </form>
 
-<script type="text/javascript">
-function VerifyUploadSizeIsOK()
-{
-    var UploadFieldID = "file-upload";
-    var MaxSizeInBytes = @UploadModel.MaxUploadSize;
-    var ActualSizeInBytes = 0;
-    var fld = document.getElementById(UploadFieldID);
-    for (var file in fld.files)
-    {
-        ActualSizeInBytes += file.size;
-    }
-    if (ActualSizeInBytes > MaxSizeInBytes)
-    {
-        alert("Max upload size is " + parseInt(MaxSizeInBytes/1024/1024) + "MB,"
-            + " but got " + parseInt(ActualSizeInBytes/1024/1024) + "MB");
-        return false;
-    }
-    return true;
-}
-</script>
+<script src="~/js/VerifyUploadSize.js"></script>

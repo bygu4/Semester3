@@ -13,6 +13,7 @@ using MyNUnit.Core;
 /// <summary>
 /// Page model for the assembly upload.
 /// </summary>
+[ValidateAntiForgeryToken]
 public class UploadModel : PageModel
 {
     /// <summary>
@@ -21,9 +22,9 @@ public class UploadModel : PageModel
     public const string AssemblyExtension = ".dll";
 
     /// <summary>
-    /// The max accepted size of the upload.
+    /// The max accepted size of the upload in bytes.
     /// </summary>
-    public const long MaxUploadSize = 20;
+    public const long MaxUploadSizeInBytes = 128 * 1024 * 1024;
 
     private const string TempDirectory = "tmp";
 
@@ -32,7 +33,6 @@ public class UploadModel : PageModel
     /// </summary>
     /// <param name="testFiles">The given assembly files to test.</param>
     /// <returns>The task representing the upload and test completion.</returns>
-    [ValidateAntiForgeryToken]
     public async Task OnPost(IEnumerable<IFormFile> testFiles)
     {
         this.ValidateFiles(testFiles);
@@ -73,7 +73,7 @@ public class UploadModel : PageModel
             InvalidFileExtensionException.ThrowIfExtensionIsNot(AssemblyExtension, file);
         }
 
-        UploadTooLargeException.ThrowIfTooLarge(MaxUploadSize, files);
+        UploadTooLargeException.ThrowIfTooLarge(MaxUploadSizeInBytes, files);
     }
 
     /// <summary>
