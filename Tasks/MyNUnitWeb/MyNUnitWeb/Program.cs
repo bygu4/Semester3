@@ -4,10 +4,16 @@
 // that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+using Microsoft.EntityFrameworkCore;
+using MyNUnitWeb.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddDbContext<TestResultDbContext>(options =>
+    options.UseSqlite("Data Source=testResults.db"));
 
 var app = builder.Build();
 

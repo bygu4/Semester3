@@ -9,12 +9,15 @@
 namespace MyNUnitWeb.Pages;
 
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using MyNUnitWeb.Data;
 
 /// <summary>
 /// The page model of the test run history.
 /// </summary>
-public class HistoryModel : PageModel
+/// <param name="dbContext">The database context to use.</param>
+public class HistoryModel(TestResultDbContext dbContext)
+    : PageModel
 {
     /// <summary>
     /// Gets or sets the result of the test run.
@@ -24,8 +27,9 @@ public class HistoryModel : PageModel
     /// <summary>
     /// Displays the history of the test runs.
     /// </summary>
-    public void OnGet()
+    /// <returns>Task representing the test history obtaining.</returns>
+    public async Task OnGetAsync()
     {
-        // get all test results from db
+        this.TestResults = await dbContext.TestResults.OrderByDescending(t => t.TimeOfRun).ToListAsync();
     }
 }

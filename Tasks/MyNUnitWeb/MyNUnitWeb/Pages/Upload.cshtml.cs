@@ -9,12 +9,15 @@ namespace MyNUnitWeb.Pages;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using MyNUnit.Core;
+using MyNUnitWeb.Data;
 
 /// <summary>
 /// Page model for the assembly upload.
 /// </summary>
+/// <param name="dbContext">The database context to use.</param>
 [ValidateAntiForgeryToken]
-public class UploadModel : PageModel
+public class UploadModel(TestResultDbContext dbContext)
+    : PageModel
 {
     /// <summary>
     /// The extension of the assembly files to test.
@@ -33,16 +36,21 @@ public class UploadModel : PageModel
     /// </summary>
     /// <param name="testFiles">The given assembly files to test.</param>
     /// <returns>The task representing the upload and test completion.</returns>
-    public async Task OnPost(IEnumerable<IFormFile> testFiles)
+    public async Task OnPostAsync(IEnumerable<IFormFile> testFiles)
     {
         this.ValidateFiles(testFiles);
         Directory.CreateDirectory(TempDirectory);
         await UploadFiles(testFiles);
 
-        var testResult = await MyNUnitCore.RunTestsFromEachAssembly(TempDirectory);
+        var testSummary = await MyNUnitCore.RunTestsFromEachAssembly(TempDirectory);
+        var testResult = new Data.TestResult();
+        testResult.TimeOfRun = DateTime.Now;
+        testResult.Summary = testSummary;
 
-        // add to db and redirect
+        await dbContext.AddAsync(testResult);
+        await dbContext.SaveChangesAsync();
         DeleteTempDirectory();
+        this.Redirect($"TestResult/{testResult.TestResultId}");
     }
 
     private static async Task UploadFiles(IEnumerable<IFormFile> files)
