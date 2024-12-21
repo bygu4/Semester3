@@ -22,7 +22,7 @@ public class HistoryModel(TestResultDbContext dbContext)
     /// <summary>
     /// Gets or sets the result of the test run.
     /// </summary>
-    public IList<TestResult> TestResults { get; set; } = [];
+    public IList<TestResultData> TestResults { get; set; } = [];
 
     /// <summary>
     /// Displays the history of the test runs.

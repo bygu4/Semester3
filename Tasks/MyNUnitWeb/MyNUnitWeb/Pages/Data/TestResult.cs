@@ -11,7 +11,7 @@ using MyNUnit.Core;
 /// <summary>
 /// Class representing the result of the test run.
 /// </summary>
-public class TestResult
+public class TestResultData
 {
     /// <summary>
     /// Gets or sets the id of the test run.

@@ -43,29 +43,28 @@ public class UploadModel(TestResultDbContext dbContext)
         await UploadFiles(testFiles);
 
         var testSummary = await MyNUnitCore.RunTestsFromEachAssembly(TempDirectory);
-        var testResult = new Data.TestResult();
+        var testResult = new TestResultData();
         testResult.TimeOfRun = DateTime.Now;
         testResult.Summary = testSummary;
 
         await dbContext.AddAsync(testResult);
         await dbContext.SaveChangesAsync();
+
         DeleteTempDirectory();
-        this.Redirect($"TestResult/{testResult.TestResultId}");
+        this.Redirect($"./TestResult/{testResult.TestResultId}");
     }
 
     private static async Task UploadFiles(IEnumerable<IFormFile> files)
     {
+        int i = 0;
         foreach (var file in files)
         {
-            await UploadFile(file);
+            var destinationName = $"{i}{AssemblyExtension}";
+            var destinationPath = Path.Join(TempDirectory, destinationName);
+            using var stream = new FileStream(destinationPath, FileMode.Create);
+            await file.CopyToAsync(stream);
+            ++i;
         }
-    }
-
-    private static async Task UploadFile(IFormFile file)
-    {
-        var destination = Path.Join(TempDirectory, file.FileName);
-        using var stream = new FileStream(destination, FileMode.Create);
-        await file.CopyToAsync(stream);
     }
 
     private static void DeleteTempDirectory()

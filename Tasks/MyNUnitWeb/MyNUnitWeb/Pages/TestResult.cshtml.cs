@@ -20,7 +20,7 @@ public class TestResultModel(TestResultDbContext dbContext)
     /// <summary>
     /// Gets or sets the result of the test run.
     /// </summary>
-    public TestResult? TestResult { get; set; }
+    public TestResultData? TestResult { get; set; }
 
     /// <summary>
     /// Displays the test result by its id in the database.

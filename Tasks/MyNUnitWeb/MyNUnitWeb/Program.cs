@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 builder.Services.AddDbContext<TestResultDbContext>(options =>
-    options.UseSqlite("Data Source=testResults.db"));
+    options.UseSqlite("Data Source=TestResults.db"));
 
 var app = builder.Build();
 

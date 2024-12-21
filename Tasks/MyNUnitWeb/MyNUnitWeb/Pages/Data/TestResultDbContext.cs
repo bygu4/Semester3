@@ -18,5 +18,5 @@ public class TestResultDbContext(DbContextOptions<TestResultDbContext> options)
     /// <summary>
     /// Gets the set of test results stored in the database.
     /// </summary>
-    public DbSet<TestResult> TestResults => this.Set<TestResult>();
+    public DbSet<TestResultData> TestResults => this.Set<TestResultData>();
 }
