@@ -45,24 +45,29 @@ public sealed record TestSummary : IEquatable<TestSummary>
     }
 
     /// <summary>
+    /// Gets the id of the test summary.
+    /// </summary>
+    public int TestSummaryId { get; private set; }
+
+    /// <summary>
     /// Gets the collection of test results represented in this summary.
     /// </summary>
-    public HashSet<TestResult> TestResults { get; } = new ();
+    public HashSet<TestResult> TestResults { get; private set; } = new ();
 
     /// <summary>
     /// Gets the number of tests passed.
     /// </summary>
-    public int NumberOfTestsPassed { get; }
+    public int NumberOfTestsPassed { get; private set; }
 
     /// <summary>
     /// Gets the number of tests failed.
     /// </summary>
-    public int NumberOfTestsFailed { get; }
+    public int NumberOfTestsFailed { get; private set; }
 
     /// <summary>
     /// Gets the number of tests ignored.
     /// </summary>
-    public int NumberOfTestsIgnored { get; }
+    public int NumberOfTestsIgnored { get; private set; }
 
     /// <summary>
     /// Gets the total number of tests.
@@ -73,7 +78,7 @@ public sealed record TestSummary : IEquatable<TestSummary>
     /// <summary>
     /// Gets the total time elapsed during the test runs.
     /// </summary>
-    public TimeSpan Elapsed { get; }
+    public TimeSpan Elapsed { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether all the run tests were passed.

@@ -12,11 +12,11 @@ using Microsoft.EntityFrameworkCore;
 /// The test result database context.
 /// </summary>
 /// <param name="options">The options to be used by the database context.</param>
-public class TestResultDbContext(DbContextOptions<TestResultDbContext> options)
+public class TestRunDbContext(DbContextOptions<TestRunDbContext> options)
     : DbContext(options)
 {
     /// <summary>
     /// Gets the set of test results stored in the database.
     /// </summary>
-    public DbSet<TestResultData> TestResults => this.Set<TestResultData>();
+    public DbSet<TestRun> TestRuns => this.Set<TestRun>();
 }

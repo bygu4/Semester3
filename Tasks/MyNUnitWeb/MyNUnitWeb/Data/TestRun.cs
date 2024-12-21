@@ -11,12 +11,12 @@ using MyNUnit.Core;
 /// <summary>
 /// Class representing the result of the test run.
 /// </summary>
-public class TestResultData
+public class TestRun
 {
     /// <summary>
     /// Gets or sets the id of the test run.
     /// </summary>
-    public int TestResultId { get; set; }
+    public int TestRunId { get; set; }
 
     /// <summary>
     /// Gets or sets the time of the test run.

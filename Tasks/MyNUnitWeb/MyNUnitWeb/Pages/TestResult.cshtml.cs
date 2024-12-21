@@ -14,13 +14,13 @@ using MyNUnitWeb.Data;
 /// The page model of a result of the test run.
 /// </summary>
 /// <param name="dbContext">The database context to use.</param>
-public class TestResultModel(TestResultDbContext dbContext)
+public class TestResultModel(TestRunDbContext dbContext)
     : PageModel
 {
     /// <summary>
     /// Gets or sets the result of the test run.
     /// </summary>
-    public TestResultData? TestResult { get; set; }
+    public TestRun? TestRun { get; set; }
 
     /// <summary>
     /// Displays the test result by its id in the database.
@@ -29,6 +29,6 @@ public class TestResultModel(TestResultDbContext dbContext)
     /// <returns>The task representing the test result obtaining.</returns>
     public async Task OnGetAsync(int id)
     {
-        this.TestResult = await dbContext.TestResults.SingleOrDefaultAsync(t => t.TestResultId == id);
+        this.TestRun = await dbContext.TestRuns.SingleOrDefaultAsync(t => t.TestRunId == id);
     }
 }

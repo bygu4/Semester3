@@ -16,7 +16,7 @@ using MyNUnitWeb.Data;
 /// </summary>
 /// <param name="dbContext">The database context to use.</param>
 [ValidateAntiForgeryToken]
-public class UploadModel(TestResultDbContext dbContext)
+public class UploadModel(TestRunDbContext dbContext)
     : PageModel
 {
     /// <summary>
@@ -42,16 +42,15 @@ public class UploadModel(TestResultDbContext dbContext)
         var tempDirectoryPath = CreateTempDirectory();
         await UploadFiles(testFiles, tempDirectoryPath);
 
-        var testSummary = await MyNUnitCore.RunTestsFromEachAssembly(tempDirectoryPath);
-        var testResult = new TestResultData();
-        testResult.TimeOfRun = DateTime.Now;
-        testResult.Summary = testSummary;
+        var testRun = new TestRun();
+        testRun.TimeOfRun = DateTime.Now;
+        testRun.Summary = await MyNUnitCore.RunTestsFromEachAssembly(tempDirectoryPath);
 
-        await dbContext.AddAsync(testResult);
+        await dbContext.AddAsync(testRun);
         await dbContext.SaveChangesAsync();
 
         DeleteTempDirectory(tempDirectoryPath);
-        this.Redirect($"./TestResult/{testResult.TestResultId}");
+        this.Redirect($"./TestResult/{testRun.TestRunId}");
     }
 
     private static void ValidateFiles(IEnumerable<IFormFile> files)

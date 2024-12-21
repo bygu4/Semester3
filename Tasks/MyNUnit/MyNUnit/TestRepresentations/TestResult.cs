@@ -29,19 +29,24 @@ public sealed record TestResult : IEquatable<TestResult>
     }
 
     /// <summary>
+    /// Gets the id of the test result.
+    /// </summary>
+    public int TestResultId { get; private set; }
+
+    /// <summary>
     /// Gets the name of the assembly in which the test class was declared.
     /// </summary>
-    public string? AssemblyName { get; }
+    public string? AssemblyName { get; private set; }
 
     /// <summary>
     /// Gets the name of the class in which the test method was declared.
     /// </summary>
-    public string? ClassName { get; }
+    public string? ClassName { get; private set; }
 
     /// <summary>
     /// Gets the name of the test method that was run.
     /// </summary>
-    public string MethodName { get; }
+    public string MethodName { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether the test was passed.
@@ -56,17 +61,17 @@ public sealed record TestResult : IEquatable<TestResult>
     /// <summary>
     /// Gets the reason to ignore the test.
     /// </summary>
-    public string? IgnoreReason { get; }
+    public string? IgnoreReason { get; private set; }
 
     /// <summary>
     /// Gets the error message in case of test's fail.
     /// </summary>
-    public string? ErrorMessage { get; }
+    public string? ErrorMessage { get; private set; }
 
     /// <summary>
     /// Gets the time elapsed during the test run.
     /// </summary>
-    public TimeSpan Elapsed { get; }
+    public TimeSpan Elapsed { get; private set; }
 
     private string Representation =>
         $"{this.AssemblyName}.{this.ClassName}.{this.MethodName}:" +

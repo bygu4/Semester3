@@ -12,8 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
-builder.Services.AddDbContext<TestResultDbContext>(options =>
-    options.UseSqlite("Data Source=TestResults.db"));
+builder.Services.AddDbContext<TestRunDbContext>(options =>
+    options.UseSqlite("Data Source=TestRuns.db"));
 
 var app = builder.Build();
 

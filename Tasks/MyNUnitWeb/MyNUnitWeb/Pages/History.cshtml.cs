@@ -16,13 +16,13 @@ using MyNUnitWeb.Data;
 /// The page model of the test run history.
 /// </summary>
 /// <param name="dbContext">The database context to use.</param>
-public class HistoryModel(TestResultDbContext dbContext)
+public class HistoryModel(TestRunDbContext dbContext)
     : PageModel
 {
     /// <summary>
-    /// Gets or sets the result of the test run.
+    /// Gets or sets the test run collection.
     /// </summary>
-    public IList<TestResultData> TestResults { get; set; } = [];
+    public IList<TestRun> TestRuns { get; set; } = [];
 
     /// <summary>
     /// Displays the history of the test runs.
@@ -30,6 +30,6 @@ public class HistoryModel(TestResultDbContext dbContext)
     /// <returns>Task representing the test history obtaining.</returns>
     public async Task OnGetAsync()
     {
-        this.TestResults = await dbContext.TestResults.OrderByDescending(t => t.TimeOfRun).ToListAsync();
+        this.TestRuns = await dbContext.TestRuns.OrderByDescending(t => t.TimeOfRun).ToListAsync();
     }
 }
