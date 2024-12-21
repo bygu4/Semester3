@@ -29,7 +29,7 @@ public class UploadModel(TestResultDbContext dbContext)
     /// </summary>
     public const long MaxUploadSizeInBytes = 128 * 1024 * 1024;
 
-    private const string TempDirectory = "tmp";
+    private const string TempDirectoryParent = "./";
 
     /// <summary>
     /// Uploads the files after validation and starts the testing.
@@ -38,11 +38,11 @@ public class UploadModel(TestResultDbContext dbContext)
     /// <returns>The task representing the upload and test completion.</returns>
     public async Task OnPostAsync(IEnumerable<IFormFile> testFiles)
     {
-        this.ValidateFiles(testFiles);
-        Directory.CreateDirectory(TempDirectory);
-        await UploadFiles(testFiles);
+        ValidateFiles(testFiles);
+        var tempDirectoryPath = CreateTempDirectory();
+        await UploadFiles(testFiles, tempDirectoryPath);
 
-        var testSummary = await MyNUnitCore.RunTestsFromEachAssembly(TempDirectory);
+        var testSummary = await MyNUnitCore.RunTestsFromEachAssembly(tempDirectoryPath);
         var testResult = new TestResultData();
         testResult.TimeOfRun = DateTime.Now;
         testResult.Summary = testSummary;
@@ -50,30 +50,11 @@ public class UploadModel(TestResultDbContext dbContext)
         await dbContext.AddAsync(testResult);
         await dbContext.SaveChangesAsync();
 
-        DeleteTempDirectory();
+        DeleteTempDirectory(tempDirectoryPath);
         this.Redirect($"./TestResult/{testResult.TestResultId}");
     }
 
-    private static async Task UploadFiles(IEnumerable<IFormFile> files)
-    {
-        int i = 0;
-        foreach (var file in files)
-        {
-            var destinationName = $"{i}{AssemblyExtension}";
-            var destinationPath = Path.Join(TempDirectory, destinationName);
-            using var stream = new FileStream(destinationPath, FileMode.Create);
-            await file.CopyToAsync(stream);
-            ++i;
-        }
-    }
-
-    private static void DeleteTempDirectory()
-    {
-        var directoryInfo = new DirectoryInfo(TempDirectory);
-        directoryInfo.Delete(true);
-    }
-
-    private void ValidateFiles(IEnumerable<IFormFile> files)
+    private static void ValidateFiles(IEnumerable<IFormFile> files)
     {
         foreach (var file in files)
         {
@@ -81,6 +62,34 @@ public class UploadModel(TestResultDbContext dbContext)
         }
 
         UploadTooLargeException.ThrowIfTooLarge(MaxUploadSizeInBytes, files);
+    }
+
+    private static async Task UploadFiles(IEnumerable<IFormFile> files, string tempDirectoryPath)
+    {
+        int i = 0;
+        foreach (var file in files)
+        {
+            var destinationName = $"{i}{AssemblyExtension}";
+            var destinationPath = Path.Join(tempDirectoryPath, destinationName);
+            using var stream = new FileStream(destinationPath, FileMode.Create);
+            await file.CopyToAsync(stream);
+            ++i;
+        }
+    }
+
+    private static string CreateTempDirectory()
+    {
+        var random = new Random((int)DateTime.Now.Ticks);
+        var tempDirectoryName = random.Next().ToString();
+        var tempDirectoryPath = Path.Join(TempDirectoryParent, tempDirectoryName);
+        Directory.CreateDirectory(tempDirectoryPath);
+        return tempDirectoryPath;
+    }
+
+    private static void DeleteTempDirectory(string tempDirectoryPath)
+    {
+        var directoryInfo = new DirectoryInfo(tempDirectoryPath);
+        directoryInfo.Delete(true);
     }
 
     /// <summary>
@@ -100,7 +109,7 @@ public class UploadModel(TestResultDbContext dbContext)
         public static void ThrowIfExtensionIsNot(string expectedExtension, IFormFile file)
         {
             var actualExtension = Path.GetExtension(file.FileName);
-            if (actualExtension != ".dll")
+            if (actualExtension != expectedExtension)
             {
                 throw new InvalidFileExtensionException(expectedExtension, actualExtension);
             }
