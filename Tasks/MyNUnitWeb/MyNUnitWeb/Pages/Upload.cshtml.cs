@@ -36,7 +36,7 @@ public class UploadModel(TestRunDbContext dbContext)
     /// </summary>
     /// <param name="testFiles">The given assembly files to test.</param>
     /// <returns>The task representing the upload and test completion.</returns>
-    public async Task OnPostAsync(IEnumerable<IFormFile> testFiles)
+    public async Task<RedirectResult> OnPostAsync(IEnumerable<IFormFile> testFiles)
     {
         ValidateFiles(testFiles);
         var tempDirectoryPath = CreateTempDirectory();
@@ -50,7 +50,7 @@ public class UploadModel(TestRunDbContext dbContext)
         await dbContext.SaveChangesAsync();
 
         DeleteTempDirectory(tempDirectoryPath);
-        this.Redirect($"./TestResult/{testRun.TestRunId}");
+        return this.Redirect($"./TestResult/{testRun.TestRunId}");
     }
 
     private static void ValidateFiles(IEnumerable<IFormFile> files)

@@ -17,6 +17,31 @@ public sealed record TestResult : IEquatable<TestResult>
     /// <summary>
     /// Initializes a new instance of the <see cref="TestResult"/> class.
     /// </summary>
+    /// <param name="assemblyName">Name of the test assembly.</param>
+    /// <param name="className">Name of the class in which the test method was defined.</param>
+    /// <param name="methodName">Name of the test method that was run.</param>
+    /// <param name="ignoreReason">Reason to ignore the test.</param>
+    /// <param name="errorMessage">Error message in case of test's fail.</param>
+    /// <param name="elapsed">Time elapsed during the test run.</param>
+    public TestResult(
+        string? assemblyName,
+        string? className,
+        string methodName,
+        string? ignoreReason,
+        string? errorMessage,
+        TimeSpan elapsed)
+    {
+        this.AssemblyName = assemblyName;
+        this.ClassName = className;
+        this.MethodName = methodName;
+        this.IgnoreReason = ignoreReason;
+        this.ErrorMessage = errorMessage;
+        this.Elapsed = elapsed;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TestResult"/> class.
+    /// </summary>
     /// <param name="test">The test to collect results from.</param>
     public TestResult(MyNUnitTest test)
     {
