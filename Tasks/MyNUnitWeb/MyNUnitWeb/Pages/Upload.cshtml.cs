@@ -50,7 +50,7 @@ public class UploadModel(TestRunDbContext dbContext)
         await dbContext.SaveChangesAsync();
 
         DeleteTempDirectory(tempDirectoryPath);
-        return this.Redirect($"./TestResult/{testRun.TestRunId}");
+        return this.Redirect($"/TestResult?id={testRun.TestRunId}");
     }
 
     private static void ValidateFiles(IEnumerable<IFormFile> files)

@@ -4,12 +4,12 @@
 <h2>Upload your test assemblies</h2>
 <form method="post" enctype="multipart/form-data">
     <p>
-        <label for="file-upload">Your .dll files to test</label>
-        <br>
-        <input id="file-upload" name="testFiles" type="file" multiple accept=@UploadModel.AssemblyExtension>
+        <label class="form-label" for="file-upload">Your .dll files to test</label>
+        <input class="form-control" id="file-upload" name="testFiles" type="file" multiple
+            accept=@UploadModel.AssemblyExtension>
     </p>
-    <button type="submit" onclick="return VerifyUploadSize('file-upload', @UploadModel.MaxUploadSizeInBytes)">
-        Start testing
+    <button class="btn btn-primary" type="submit"
+        onclick="return VerifyUploadSize('file-upload', @UploadModel.MaxUploadSizeInBytes)">Start testing
     </button>
 </form>
 

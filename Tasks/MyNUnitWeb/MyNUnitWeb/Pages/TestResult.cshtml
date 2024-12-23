@@ -1,0 +1,25 @@
+@page
+@model TestResultModel
+
+@if (Model.TestRun is null)
+{
+    <h2>Test run was not found</h2>
+}
+else
+{
+    <h2>Test run @Model.TestRun.TimeOfRun.ToString("HH:mm dd-MM-yyyy")</h2>
+
+    var summary = Model.TestRun.Summary;
+    var testResults = summary.TestResults
+        .OrderBy(t => t.AssemblyName)
+        .OrderBy(t => t.ClassName);
+    var summaryContainerType = summary.AllTestsPassed ? "passed" : "failed";
+
+    <div class="container-fluid @summaryContainerType">
+        <h5>
+            Passed: @summary.NumberOfTestsPassed,
+            Failed: @summary.NumberOfTestsFailed,
+            Ignored: @summary.NumberOfTestsIgnored
+        </h5>
+    </div>
+}
