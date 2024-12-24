@@ -4,7 +4,9 @@
 <h2>Upload your test assemblies</h2>
 <form method="post" enctype="multipart/form-data">
     <p>
-        <label class="form-label" for="file-upload">Your .dll files to test</label>
+        <label class="form-label" for="file-upload">
+            Your .dll files to test (@(UploadModel.MaxUploadSizeInBytes / 1024 / 1024)MB max)
+        </label>
         <input class="form-control" id="file-upload" name="testFiles" type="file" multiple
             accept=@UploadModel.AssemblyExtension>
     </p>
