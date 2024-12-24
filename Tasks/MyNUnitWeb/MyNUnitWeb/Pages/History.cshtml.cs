@@ -30,6 +30,8 @@ public class HistoryModel(TestRunDbContext dbContext)
     /// <returns>Task representing the test history obtaining.</returns>
     public async Task OnGetAsync()
     {
-        this.TestRuns = await dbContext.TestRuns.OrderByDescending(t => t.TimeOfRun).ToListAsync();
+        this.TestRuns = await dbContext.TestRuns
+            .OrderByDescending(t => t.TimeOfRun)
+            .ToListAsync();
     }
 }

@@ -29,6 +29,9 @@ public class TestResultModel(TestRunDbContext dbContext)
     /// <returns>The task representing the test result obtaining.</returns>
     public async Task OnGetAsync(int id)
     {
-        this.TestRun = await dbContext.TestRuns.SingleOrDefaultAsync(t => t.TestRunId == id);
+        this.TestRun = await dbContext.TestRuns
+            .Where(t => t.TestRunId == id)
+            .Include(t => t.Summary)
+            .FirstOrDefaultAsync();
     }
 }
