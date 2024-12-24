@@ -11,7 +11,7 @@ using MyNUnitWeb.Data;
 namespace MyNUnitWeb.Migrations
 {
     [DbContext(typeof(TestRunDbContext))]
-    [Migration("20241222200954_InitialCreate")]
+    [Migration("20241224105232_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -44,13 +44,8 @@ public sealed record TestResult : IEquatable<TestResult>
     /// </summary>
     /// <param name="test">The test to collect results from.</param>
     public TestResult(MyNUnitTest test)
+        : this(test.AssemblyName, test.ClassName, test.MethodName, test.IgnoreReason, test.ErrorMessage, test.Elapsed)
     {
-        this.AssemblyName = test.AssemblyName;
-        this.ClassName = test.ClassName;
-        this.MethodName = test.MethodName;
-        this.IgnoreReason = test.IgnoreReason;
-        this.ErrorMessage = test.ErrorMessage;
-        this.Elapsed = test.Elapsed;
     }
 
     /// <summary>

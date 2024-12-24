@@ -52,7 +52,7 @@ public sealed record TestSummary : IEquatable<TestSummary>
     /// <summary>
     /// Gets the collection of test results represented in this summary.
     /// </summary>
-    public HashSet<TestResult> TestResults { get; private set; } = new ();
+    public HashSet<TestResult> TestResults { get; } = new ();
 
     /// <summary>
     /// Gets the number of tests passed.
