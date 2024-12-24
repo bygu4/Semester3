@@ -30,10 +30,39 @@ body {
   text-align: start;
 }
 
+.summary {
+  border-radius: 5px;
+}
+
+.assembly {
+  border: solid;
+  border-width: 2px;
+  border-radius: 10px;
+  border-color: rgb(186, 186, 186);
+  margin-top: 1%;
+  padding-top: 1%;
+}
+
 .passed {
-  background-color: rgb(98, 236, 82);
+  background-color: rgb(81, 211, 67);
 }
 
 .failed {
-  background-color: rgb(246, 95, 95);
+  background-color: rgb(246, 93, 93);
+}
+
+.ignored {
+  background-color: rgb(226, 182, 23);
+}
+
+.label-passed {
+  color: rgb(81, 211, 67);
+}
+
+.label-failed {
+  color: rgb(246, 93, 93);
+}
+
+.label-ignored {
+  color: rgb(226, 182, 23);
 }

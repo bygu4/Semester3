@@ -10,16 +10,54 @@ else
     <h2>Test run @Model.TestRun.TimeOfRun.ToString("HH:mm dd-MM-yyyy")</h2>
 
     var summary = Model.TestRun.Summary;
-    var testResults = summary.TestResults
-        .OrderBy(t => t.AssemblyName)
-        .OrderBy(t => t.ClassName);
     var summaryContainerType = summary.AllTestsPassed ? "passed" : "failed";
 
-    <div class="container-fluid @summaryContainerType">
+    <div class="container-fluid summary @summaryContainerType">
         <h5>
             Passed: @summary.NumberOfTestsPassed,
             Failed: @summary.NumberOfTestsFailed,
             Ignored: @summary.NumberOfTestsIgnored
         </h5>
     </div>
+
+    foreach (var (assemblyName, testResults) in Model.TestResultsByAssembly)
+    {
+        <div class="container-fluid assembly">
+
+            <h4>@assemblyName</h4>
+
+            @foreach (var testResult in testResults)
+            {
+                var status = "failed";
+                if (testResult.Passed)
+                {
+                    status = "passed";
+                }
+                if (testResult.Ignored)
+                {
+                    status = "ignored";
+                }
+
+                <hr>
+                <div class="container">
+
+                    <h5>
+                        @testResult.ClassName.@testResult.MethodName:
+                        <b class="label-@status">@status</b>
+                    </h5>
+
+                    @if (!testResult.Passed)
+                    {
+                        <p>Message: @testResult.ErrorMessage</p>
+                    }
+                    else if (testResult.Ignored)
+                    {
+                        <p>Reason: @testResult.IgnoreReason</p>
+                    }
+
+                </div>
+            }
+
+        </div>
+    }
 }

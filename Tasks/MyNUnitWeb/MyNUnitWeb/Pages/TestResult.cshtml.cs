@@ -4,10 +4,13 @@
 // that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+#pragma warning disable SA1010 // Opening square brackets should be spaced correctly
+
 namespace MyNUnitWeb.Pages;
 
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using MyNUnit.Core;
 using MyNUnitWeb.Data;
 
 /// <summary>
@@ -23,6 +26,11 @@ public class TestResultModel(TestRunDbContext dbContext)
     public TestRun? TestRun { get; set; }
 
     /// <summary>
+    /// Gets the dictionary containing a test result collection by the assembly name.
+    /// </summary>
+    public Dictionary<string, List<TestResult>> TestResultsByAssembly { get; } = new ();
+
+    /// <summary>
     /// Displays the test result by its id in the database.
     /// </summary>
     /// <param name="id">The id of the test run in the database.</param>
@@ -31,7 +39,30 @@ public class TestResultModel(TestRunDbContext dbContext)
     {
         this.TestRun = await dbContext.TestRuns
             .Where(t => t.TestRunId == id)
-            .Include(t => t.Summary)
+            .Include(t => t.Summary.TestResults)
             .FirstOrDefaultAsync();
+        this.InitializeTestResults();
+    }
+
+    private void InitializeTestResults()
+    {
+        if (this.TestRun is null)
+        {
+            return;
+        }
+
+        var testResults = this.TestRun.Summary.TestResults.OrderBy(t => t.ClassName);
+        foreach (var testResult in testResults)
+        {
+            var assemblyName = testResult.AssemblyName is not null ? testResult.AssemblyName : string.Empty;
+            if (this.TestResultsByAssembly.TryGetValue(assemblyName, out var value))
+            {
+                value.Add(testResult);
+            }
+            else
+            {
+                this.TestResultsByAssembly[assemblyName] = [testResult];
+            }
+        }
     }
 }
