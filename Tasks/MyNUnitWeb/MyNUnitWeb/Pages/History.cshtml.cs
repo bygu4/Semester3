@@ -31,7 +31,8 @@ public class HistoryModel(TestRunDbContext dbContext)
     public async Task OnGetAsync()
     {
         this.TestRuns = await dbContext.TestRuns
-            .OrderByDescending(t => t.TimeOfRun)
+            .Include(r => r.Summary)
+            .OrderByDescending(r => r.TimeOfRun)
             .ToListAsync();
     }
 }
