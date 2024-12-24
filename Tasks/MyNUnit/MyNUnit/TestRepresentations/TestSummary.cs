@@ -24,9 +24,9 @@ public sealed record TestSummary : IEquatable<TestSummary>
     /// <param name="testResults">Collection of test results to collect summary from.</param>
     public TestSummary(IEnumerable<TestResult> testResults)
     {
-        foreach (var testResult in testResults)
+        this.TestResults.UnionWith(testResults);
+        foreach (var testResult in this.TestResults)
         {
-            this.TestResults.Add(testResult);
             if (testResult.Ignored)
             {
                 ++this.NumberOfTestsIgnored;
