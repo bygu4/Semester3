@@ -1,0 +1,4 @@
+# MyNUnit test project output files
+*.dll
+*.json
+MyNUnit
