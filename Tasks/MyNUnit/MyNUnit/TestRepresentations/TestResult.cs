@@ -17,31 +17,56 @@ public sealed record TestResult : IEquatable<TestResult>
     /// <summary>
     /// Initializes a new instance of the <see cref="TestResult"/> class.
     /// </summary>
+    /// <param name="assemblyName">Name of the test assembly.</param>
+    /// <param name="className">Name of the class in which the test method was defined.</param>
+    /// <param name="methodName">Name of the test method that was run.</param>
+    /// <param name="ignoreReason">Reason to ignore the test.</param>
+    /// <param name="errorMessage">Error message in case of test's fail.</param>
+    /// <param name="elapsed">Time elapsed during the test run.</param>
+    public TestResult(
+        string? assemblyName,
+        string? className,
+        string methodName,
+        string? ignoreReason,
+        string? errorMessage,
+        TimeSpan elapsed)
+    {
+        this.AssemblyName = assemblyName;
+        this.ClassName = className;
+        this.MethodName = methodName;
+        this.IgnoreReason = ignoreReason;
+        this.ErrorMessage = errorMessage;
+        this.Elapsed = elapsed;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TestResult"/> class.
+    /// </summary>
     /// <param name="test">The test to collect results from.</param>
     public TestResult(MyNUnitTest test)
+        : this(test.AssemblyName, test.ClassName, test.MethodName, test.IgnoreReason, test.ErrorMessage, test.Elapsed)
     {
-        this.AssemblyName = test.AssemblyName;
-        this.ClassName = test.ClassName;
-        this.MethodName = test.MethodName;
-        this.IgnoreReason = test.IgnoreReason;
-        this.ErrorMessage = test.ErrorMessage;
-        this.Elapsed = test.Elapsed;
     }
+
+    /// <summary>
+    /// Gets the id of the test result.
+    /// </summary>
+    public int TestResultId { get; private set; }
 
     /// <summary>
     /// Gets the name of the assembly in which the test class was declared.
     /// </summary>
-    public string? AssemblyName { get; }
+    public string? AssemblyName { get; private set; }
 
     /// <summary>
     /// Gets the name of the class in which the test method was declared.
     /// </summary>
-    public string? ClassName { get; }
+    public string? ClassName { get; private set; }
 
     /// <summary>
     /// Gets the name of the test method that was run.
     /// </summary>
-    public string MethodName { get; }
+    public string MethodName { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether the test was passed.
@@ -56,17 +81,17 @@ public sealed record TestResult : IEquatable<TestResult>
     /// <summary>
     /// Gets the reason to ignore the test.
     /// </summary>
-    public string? IgnoreReason { get; }
+    public string? IgnoreReason { get; private set; }
 
     /// <summary>
     /// Gets the error message in case of test's fail.
     /// </summary>
-    public string? ErrorMessage { get; }
+    public string? ErrorMessage { get; private set; }
 
     /// <summary>
     /// Gets the time elapsed during the test run.
     /// </summary>
-    public TimeSpan Elapsed { get; }
+    public TimeSpan Elapsed { get; private set; }
 
     private string Representation =>
         $"{this.AssemblyName}.{this.ClassName}.{this.MethodName}:" +

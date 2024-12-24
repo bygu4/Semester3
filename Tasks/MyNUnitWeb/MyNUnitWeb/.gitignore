@@ -1,0 +1,4 @@
+# MyNUnitWeb database files
+*.db
+*.db-shm
+*.db-wal
