@@ -10,10 +10,10 @@ else
     <h2>Test run @Model.TestRun.TimeOfRun.ToString("HH:mm dd-MM-yyyy")</h2>
 
     var summary = Model.TestRun.Summary;
-    var summaryContainerType = summary.AllTestsPassed ? "passed" : "failed";
+    var summaryStatus = summary.AllTestsPassed ? "passed" : "failed";
 
-    <div class="container-fluid summary @summaryContainerType">
-        <h5>
+    <div class="alert summary @summaryStatus">
+        <h5 class="no-margin">
             Passed: @summary.NumberOfTestsPassed,
             Failed: @summary.NumberOfTestsFailed,
             Ignored: @summary.NumberOfTestsIgnored
@@ -24,35 +24,41 @@ else
     {
         <div class="container-fluid assembly">
 
-            <h4>@assemblyName</h4>
+            <div class="container-fluid">
+                <h4>@assemblyName</h4>
+            </div>
 
             @foreach (var testResult in testResults)
             {
-                var status = "failed";
+                var testStatus = "failed";
                 if (testResult.Passed)
                 {
-                    status = "passed";
+                    testStatus = "passed";
                 }
                 if (testResult.Ignored)
                 {
-                    status = "ignored";
+                    testStatus = "ignored";
                 }
 
                 <hr>
-                <div class="container">
+                <div class="container-fluid">
 
                     <h5>
                         @testResult.ClassName.@testResult.MethodName:
-                        <b class="label-@status">@status</b>
+                        <b class="label-@testStatus">@testStatus</b>
                     </h5>
 
                     @if (!testResult.Passed)
                     {
-                        <p>Message: @testResult.ErrorMessage</p>
+                        <p>
+                            <b>Message</b>: @testResult.ErrorMessage
+                        </p>
                     }
                     else if (testResult.Ignored)
                     {
-                        <p>Reason: @testResult.IgnoreReason</p>
+                        <p>
+                            <b>Reason</b>: @testResult.IgnoreReason
+                        </p>
                     }
 
                 </div>

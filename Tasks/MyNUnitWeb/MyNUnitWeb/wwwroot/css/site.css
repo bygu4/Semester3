@@ -32,15 +32,21 @@ body {
 
 .summary {
   border-radius: 5px;
+  padding: 5px;
+  padding-left: 10px;
 }
 
 .assembly {
   border: solid;
-  border-width: 2px;
+  border-width: 1px;
   border-radius: 10px;
   border-color: rgb(186, 186, 186);
   margin-top: 1%;
   padding-top: 1%;
+}
+
+.no-margin {
+  margin: 0;
 }
 
 .passed {
