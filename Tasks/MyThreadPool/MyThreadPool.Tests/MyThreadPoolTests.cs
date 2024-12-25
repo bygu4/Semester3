@@ -296,10 +296,10 @@ public static class MyThreadPoolTests
     }
 
     /// <summary>
-    /// Tests the task result obtaining after shutdown.
+    /// Tests the task completion after shutdown during evaluation.
     /// </summary>
     [Test]
-    public static void Test_ShutdownDuringTaskCompletion_TaskIsCanceled()
+    public static void Test_ShutdownDuringTaskCompletion_TaskIsCompleted()
     {
         var numberOfThreads = 1;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -308,8 +308,29 @@ public static class MyThreadPoolTests
             Thread.Sleep(10000);
             return 1;
         });
+        Thread.Sleep(100);
         threadPool.Shutdown();
-        AssertThatTaskWasCanceled(task);
+        AssertThatTaskIsCompleted_NonBlock(task, 1);
+    }
+
+    /// <summary>
+    /// Tests the completion of task that wasn't being evaluated during shutdown.
+    /// </summary>
+    [Test]
+    public static void Test_ShutdownWithTaskNotBeingEvaluated_TaskIsCanceled()
+    {
+        var numberOfThreads = 1;
+        var threadPool = new MyThreadPool(numberOfThreads);
+        var firstTask = threadPool.Submit(() =>
+        {
+            Thread.Sleep(10000);
+            return "first";
+        });
+        var secondTask = threadPool.Submit(() => "second");
+        Thread.Sleep(100);
+        threadPool.Shutdown();
+        AssertThatTaskIsCompleted_NonBlock(firstTask, "first");
+        AssertThatTaskWasCanceled(secondTask);
     }
 
     /// <summary>
@@ -329,7 +350,7 @@ public static class MyThreadPoolTests
     /// Tests the task submission with continuation after shutdown.
     /// </summary>
     [Test]
-    public static void Test_AddTaskWithContinuationAfterShutdown_TasksAreCanceled()
+    public static void Test_AddTaskWithContinuationAfterShutdown_TaskIsCanceled()
     {
         var numberOfThreads = 3;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -342,7 +363,7 @@ public static class MyThreadPoolTests
     /// Tests the task continuation after shutdown.
     /// </summary>
     [Test]
-    public static void Test_ContinueFromCanceledTask_TasksAreCanceled()
+    public static void Test_ContinueTaskAfterShutdown_TaskIsCanceled()
     {
         var numberOfThreads = 2;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -414,7 +435,7 @@ public static class MyThreadPoolTests
     /// Tests the concurrent thread pool shutdown.
     /// </summary>
     [Test]
-    public static void Test_ShutdownFromOtherThread_TaskIsCanceled()
+    public static void Test_ShutdownFromOtherThreadDuringCompletion_TaskIsCompleted()
     {
         var numberOfThreads = 4;
         var threadPool = new MyThreadPool(numberOfThreads);
@@ -425,13 +446,16 @@ public static class MyThreadPoolTests
                 Thread.Sleep(10000);
                 return 42;
             });
-            AssertThatTaskWasCanceled(task);
+            AssertThatTaskIsCompleted_BlockThread(task, 42);
         });
-        var shutdownThread = new Thread(threadPool.Shutdown);
+        var shutdownThread = new Thread(() =>
+        {
+            Thread.Sleep(100);
+            threadPool.Shutdown();
+        });
 
         taskThread.Start();
         shutdownThread.Start();
-
         JoinThreads([taskThread, shutdownThread]);
     }
 
