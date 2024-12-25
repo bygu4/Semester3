@@ -364,10 +364,11 @@ public static class MyThreadPoolTests
     {
         var numberOfThreads = 6;
         var threadPool = new MyThreadPool(numberOfThreads);
+        var threads = new Thread[numberOfThreads];
         for (int i = 0; i < numberOfThreads; ++i)
         {
             var localI = i;
-            var thread = new Thread(() =>
+            threads[i] = new Thread(() =>
             {
                 var task = threadPool.Submit(() =>
                 {
@@ -376,8 +377,10 @@ public static class MyThreadPoolTests
                 });
                 AssertThatTaskIsCompleted_BlockThread(task, localI);
             });
-            thread.Start();
+            threads[i].Start();
         }
+
+        JoinThreads(threads);
     }
 
     /// <summary>
@@ -388,10 +391,11 @@ public static class MyThreadPoolTests
     {
         var numberOfThreads = 4;
         var threadPool = new MyThreadPool(numberOfThreads);
+        var threads = new Thread[numberOfThreads];
         var baseTask = threadPool.Submit(() => "oollqqqqw");
         for (int i = 0; i < numberOfThreads; ++i)
         {
-            var thread = new Thread(() =>
+            threads[i] = new Thread(() =>
             {
                 var continuation = baseTask.ContinueWith(s =>
                 {
@@ -400,8 +404,10 @@ public static class MyThreadPoolTests
                 });
                 AssertThatTaskIsCompleted_BlockThread(continuation, 4);
             });
-            thread.Start();
+            threads[i].Start();
         }
+
+        JoinThreads(threads);
     }
 
     /// <summary>
@@ -422,8 +428,11 @@ public static class MyThreadPoolTests
             AssertThatTaskWasCanceled(task);
         });
         var shutdownThread = new Thread(threadPool.Shutdown);
+
         taskThread.Start();
         shutdownThread.Start();
+
+        JoinThreads([taskThread, shutdownThread]);
     }
 
     private static void AssertThatTaskIsCompleted_BlockThread<T>(
@@ -453,5 +462,13 @@ public static class MyThreadPoolTests
     {
         Assert.Throws<TaskCanceledException>(() => { _ = task.Result; });
         Assert.That(task.IsCompleted, Is.False);
+    }
+
+    private static void JoinThreads(IEnumerable<Thread> threads)
+    {
+        foreach (var thread in threads)
+        {
+            thread.Join();
+        }
     }
 }

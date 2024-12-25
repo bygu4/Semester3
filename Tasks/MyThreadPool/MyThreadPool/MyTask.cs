@@ -13,11 +13,11 @@ namespace MyThreadPool;
 /// <typeparam name="TResult">Type of task's result.</typeparam>
 internal class MyTask<TResult> : IMyTask<TResult>
 {
-    private readonly Func<TResult> methodToEvaluate;
     private readonly PipelineQueue<Action> tasksToContinueWith;
     private readonly CancellationToken cancellationToken;
     private readonly ManualResetEvent wasEvaluated = new (false);
 
+    private Func<TResult>? methodToEvaluate;
     private TResult? result;
     private Exception? thrownException;
 
@@ -71,6 +71,7 @@ internal class MyTask<TResult> : IMyTask<TResult>
             return;
         }
 
+        ArgumentNullException.ThrowIfNull(this.methodToEvaluate);
         try
         {
             this.result = this.methodToEvaluate();
@@ -80,6 +81,7 @@ internal class MyTask<TResult> : IMyTask<TResult>
             this.thrownException = e;
         }
 
+        this.methodToEvaluate = null;
         this.IsCompleted = true;
         this.wasEvaluated.Set();
         this.tasksToContinueWith.PassToNext();
