@@ -37,8 +37,7 @@ public class PriorityQueue<TValue, TPriority>
             {
                 previous.Next = elementToInsert;
             }
-
-            if (current is null)
+            else
             {
                 this.head = elementToInsert;
             }
@@ -58,14 +57,14 @@ public class PriorityQueue<TValue, TPriority>
         {
             while (this.Size == 0)
             {
-                Monitor.Wait(this);
+                Monitor.Wait(this.lockObject);
             }
 
             ArgumentNullException.ThrowIfNull(this.head);
-            var elementToReturn = this.head;
-            this.head = elementToReturn.Next;
+            var valueToReturn = this.head.Value;
+            this.head = this.head.Next;
             --this.Size;
-            return elementToReturn.Value;
+            return valueToReturn;
         }
     }
 
@@ -73,7 +72,7 @@ public class PriorityQueue<TValue, TPriority>
     {
         Element? previous = null;
         Element? current = this.head;
-        for (; current?.Next is not null && current.Priority.CompareTo(priority) > 0; current = current.Next)
+        for (; current is not null && current.Priority.CompareTo(priority) >= 0; current = current.Next)
         {
             previous = current;
         }
