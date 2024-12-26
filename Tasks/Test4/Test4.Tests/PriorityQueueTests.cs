@@ -84,7 +84,7 @@ public static class PriorityQueueTests
         var queue = new PriorityQueue<int, int>();
         for (int i = 0; i < numberOfThreads; ++i)
         {
-            var localI = i;
+            var localI = i + 1;
             threads[i] = new Thread(() =>
             {
                 Thread.Sleep(1000);
@@ -120,6 +120,7 @@ public static class PriorityQueueTests
             Assert.That(queue.Dequeue(), Is.EqualTo("fas"));
             Assert.That(queue.Dequeue(), Is.EqualTo("2313211"));
             Assert.That(queue.Dequeue(), Is.EqualTo("op"));
+            Assert.That(queue.Size, Is.EqualTo(0));
         });
         firstThread.Start();
         secondThread.Start();
