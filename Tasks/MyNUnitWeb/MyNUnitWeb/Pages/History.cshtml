@@ -1,0 +1,31 @@
+@page
+@model HistoryModel
+
+<h2>Test run history</h2>
+
+@if (Model.TestRuns.Count == 0)
+{
+    <h4>No tests uploaded yet :(</h4>
+}
+
+@for (int i = 0; i < Model.TestRuns.Count; ++i)
+{
+    var testRun = Model.TestRuns[i];
+    var summary = testRun.Summary;
+    var status = summary.AllTestsPassed ? "passed" : "failed";
+
+    <hr>
+    <div class="container-fluid">
+        <a class="nav-link text-dark" asp-page="/TestResult" asp-route-id=@testRun.TestRunId>
+            <h4>
+                @(i + 1))
+                <b class="label-@status">Test run @testRun.TimeOfRun.ToString("HH:mm dd-MM-yyyy")</b>
+            </h4>
+        </a>
+        <p>
+            Passed: @summary.NumberOfTestsPassed,
+            Failed: @summary.NumberOfTestsFailed,
+            Ignored: @summary.NumberOfTestsIgnored
+        </p>
+    </div>
+}
