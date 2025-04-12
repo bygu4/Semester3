@@ -1,63 +1,79 @@
-﻿namespace Test2;
+﻿// Copyright (c) Alexander Bugaev 2024
+//
+// Use of this source code is governed by an MIT license
+// that can be found in the LICENSE file or at
+// https://opensource.org/licenses/MIT.
+
+namespace Test2;
 
 using System.Reflection;
 
 public static class Reflector
 {
-    private const string Tab = "    ";
+    private const string Indent = "    ";
+    private const BindingFlags All = (BindingFlags)(-1);
 
-    public static async Task PrintStructure(Type someClass)
+    /// <summary>
+    /// Writes the signature of the given type with all fields, methods and nested classes.
+    /// Saves the resulting signature to the file with name of the type.
+    /// </summary>
+    /// <param name="someType">The type to write signature of.</param>
+    /// <returns>A task representing the writing process.</returns>
+    public static async Task PrintStructure(Type someType)
     {
-        using var writer = new StreamWriter($"{someClass.Name}.cs");
-        await PrintStructureInternal(someClass, 0, writer);
+        using var writer = new StreamWriter($"{someType.Name}.cs");
+        await PrintStructureInternal(someType, 0, writer);
     }
 
     private static async Task PrintStructureInternal(
-        Type someClass, int numberOfTabs, StreamWriter writer)
+        Type someType, int indentCount, StreamWriter writer)
     {
-        var indent = GetIndent(numberOfTabs);
-        await WriteClassInfo(someClass, numberOfTabs, writer);
+        var indent = GetIndent(indentCount);
+        await WriteClassInfo(someType, indentCount, writer);
         await writer.WriteLineAsync(indent + '{');
-        foreach (var field in someClass.GetFields())
+
+        var fields = someType.GetFields(All);
+        var methods = someType.GetMethods(All);
+        var nestedTypes = someType.GetNestedTypes(All);
+
+        foreach (var field in fields)
         {
-            await PrintField(field, numberOfTabs + 1, writer);
+            await PrintField(field, indentCount + 1, writer);
         }
 
-        await writer.WriteAsync('\n');
-        foreach (var method in someClass.GetMethods())
+        foreach (var method in methods)
         {
-            await PrintMethod(method, numberOfTabs + 1, writer);
+            await PrintMethod(method, indentCount + 1, writer);
         }
 
-        await writer.WriteAsync('\n');
-        foreach (var nestedClass in someClass.GetNestedTypes())
+        foreach (var nestedType in nestedTypes)
         {
-            await PrintStructureInternal(nestedClass, numberOfTabs + 1, writer);
+            await PrintStructureInternal(nestedType, indentCount + 1, writer);
         }
 
         await writer.WriteLineAsync(indent + '}');
     }
 
     private static async Task WriteClassInfo(
-        Type classInfo, int numberOfTabs, StreamWriter writer)
+        Type classInfo, int indentCount, StreamWriter writer)
     {
-        var indent = GetIndent(numberOfTabs);
+        var indent = GetIndent(indentCount);
         var signature = GetClassSignature(classInfo);
         await writer.WriteLineAsync(indent + signature);
     }
 
     private static async Task PrintField(
-        FieldInfo field, int numberOfTabs, StreamWriter writer)
+        FieldInfo field, int indentCount, StreamWriter writer)
     {
-        var indent = GetIndent(numberOfTabs);
+        var indent = GetIndent(indentCount);
         var signature = GetFieldSignature(field);
         await writer.WriteLineAsync(indent + signature);
     }
 
     private static async Task PrintMethod(
-        MethodInfo method, int numberOfTabs, StreamWriter writer)
+        MethodInfo method, int indentCount, StreamWriter writer)
     {
-        var indent = GetIndent(numberOfTabs);
+        var indent = GetIndent(indentCount);
         var signature = GetMethodSignature(method);
         await writer.WriteLineAsync(indent + signature);
     }
@@ -65,7 +81,7 @@ public static class Reflector
     private static string GetClassSignature(Type classInfo)
     {
         var signature = "";
-        if (classInfo.IsPublic)
+        if (classInfo.IsPublic || classInfo.IsNestedPublic)
         {
             signature += "public ";
         }
@@ -147,6 +163,6 @@ public static class Reflector
         return signature;
     }
 
-    private static string GetIndent(int numberOfTabs)
-        => string.Concat(Enumerable.Repeat(Tab, numberOfTabs));
+    private static string GetIndent(int indentCount)
+        => string.Concat(Enumerable.Repeat(Indent, indentCount));
 }
