@@ -8,6 +8,9 @@ namespace Test2;
 
 using System.Reflection;
 
+/// <summary>
+/// Class containing utility for printing type signatures using reflection.
+/// </summary>
 public static class Reflector
 {
     private const string Indent = "    ";
