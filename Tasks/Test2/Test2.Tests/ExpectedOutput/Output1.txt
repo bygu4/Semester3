@@ -1,0 +1,18 @@
+public class TestClass1
+{
+    public System.Int32 testField1;
+    private static System.String testField2;
+    public System.Int32 TestMethod1(System.Single attribute1);
+    public static System.Single TestMethod2();
+    private System.String TestMethod3(System.String attribute1, System.Int32 attribute2);
+    public abstract interface INestedInterface
+    {
+        public System.Void Foo();
+    }
+    private sealed class NestedClass
+    {
+        public System.Single testField1;
+        private static System.String testField2;
+        public System.Double TestMethod1();
+    }
+}
