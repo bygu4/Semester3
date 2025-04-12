@@ -162,7 +162,7 @@ public static class Reflector
         }
 
         signature += string.Join(", ", parameters);
-        signature += ')';
+        signature += ");";
         return signature;
     }
 
